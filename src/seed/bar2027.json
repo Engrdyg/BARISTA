@@ -1,0 +1,50 @@
+{
+  "examConfig": {
+    "name": "2027 Bar Examinations",
+    "day1": "2027-09-05",
+    "day2": "2027-09-08",
+    "day3": "2027-09-12",
+    "amStart": "08:00",
+    "amEnd": "12:00",
+    "pmStart": "14:00",
+    "pmEnd": "18:00",
+    "questionsPerSubject": 20,
+    "pointsPerQuestion": 5,
+    "coverageCutoff": "2026-06-30",
+    "passingGwa": 75,
+    "timezone": "Asia/Manila"
+  },
+  "subjects": [
+    { "code": "POL", "name": "Political and Public International Law", "weight": 15, "examDay": 1, "session": "AM", "color": "#3B6FD8" },
+    { "code": "COMTAX", "name": "Commercial and Taxation Laws", "weight": 20, "examDay": 1, "session": "PM", "color": "#2A9461" },
+    { "code": "CIV", "name": "Civil Law and Land Titles and Deeds", "weight": 20, "examDay": 2, "session": "AM", "color": "#E08A1E" },
+    { "code": "LAB", "name": "Labor Law and Social Legislation", "weight": 10, "examDay": 2, "session": "PM", "color": "#8657C9" },
+    { "code": "CRIM", "name": "Criminal Law", "weight": 10, "examDay": 3, "session": "AM", "color": "#CF3F3F" },
+    { "code": "REM", "name": "Remedial Law, Legal and Judicial Ethics, with Practical Exercises", "weight": 25, "examDay": 3, "session": "PM", "color": "#178C96" }
+  ],
+  "defaults": {
+    "leafScores": { "not_started": 0, "read_once": 0.4, "reviewed": 0.75, "confident": 1.0 },
+    "desiredRetention": 0.9,
+    "newCardsPerDay": 20,
+    "maxReviewsPerDay": 300,
+    "minutesPerProblem": 12,
+    "dailyCapHours": 12,
+    "neglectDays": 10,
+    "highlightLegend": [
+      { "key": "yellow", "label": "Key words", "color": "#FFE14D" },
+      { "key": "green", "label": "Exceptions", "color": "#A8E6A1" },
+      { "key": "pink", "label": "Periods and numbers", "color": "#FFB3CF" },
+      { "key": "blue", "label": "Definitions", "color": "#AFCFFF" }
+    ],
+    "structureTemplate": ["Answer", "Legal basis", "Application", "Conclusion"],
+    "errorTags": [
+      "Wrong conclusion",
+      "Wrong or missing legal basis",
+      "Weak application",
+      "Misread facts",
+      "Missed issue",
+      "Ran out of time",
+      "Too long"
+    ]
+  }
+}
