@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChevronDown, FileUp, Landmark, Play, Plus } from 'lucide-react';
+import { ChevronDown, FileUp, Landmark, Lightbulb, Play, Plus } from 'lucide-react';
 import { Empty, Markdown, PageHeader, PageSkeleton, SubjectChips, SubjectTag } from '../components/ui';
 import { db } from '../lib/db';
 import { createAttempt } from '../lib/exam';
@@ -24,6 +24,7 @@ export default function BarQuestions() {
   const [recentOnly, setRecentOnly] = useState(true);
   const [year, setYear] = useState<number | null>(null);
   const [open, setOpen] = useState<string | null>(null);
+  const [answerFor, setAnswerFor] = useState<string | null>(null);
   const [adding, setAdding] = useState(false);
   const [importing, setImporting] = useState(false);
 
@@ -207,9 +208,23 @@ export default function BarQuestions() {
                                     {expanded && (
                                       <div className="page-in px-4 pb-4 pl-15">
                                         <Markdown className="reading text-base">{q.text}</Markdown>
-                                        <button className="btn btn-sm mt-3" onClick={() => void practise([q])}>
-                                          <Play /> Answer this one · {settings.minutesPerProblem} min
-                                        </button>
+                                        <div className="mt-3 flex flex-wrap gap-2">
+                                          <button className="btn btn-sm" onClick={() => void practise([q])}>
+                                            <Play /> Answer this one · {settings.minutesPerProblem} min
+                                          </button>
+                                          {q.reference_answer && (
+                                            <button className="btn btn-sm btn-ghost" aria-expanded={answerFor === q.id} onClick={() => setAnswerFor(answerFor === q.id ? null : q.id)}>
+                                              <Lightbulb /> {answerFor === q.id ? 'Hide' : 'Show'} suggested answer
+                                            </button>
+                                          )}
+                                        </div>
+                                        {answerFor === q.id && q.reference_answer && (
+                                          <div className="page-in mt-3 rounded-lg border border-rule bg-elevated p-4">
+                                            <p className="t-eyebrow mb-2">Suggested answer</p>
+                                            <Markdown className="reading text-base">{q.reference_answer}</Markdown>
+                                            {q.notes && <p className="mt-3 text-xs text-muted">{q.notes}</p>}
+                                          </div>
+                                        )}
                                       </div>
                                     )}
                                   </li>
