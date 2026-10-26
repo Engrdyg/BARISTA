@@ -41,7 +41,7 @@ import { usePref } from '../lib/prefs';
 import { useStore } from '../lib/store';
 import { setSubjectFilter, useSubjectFilter } from '../lib/subjectFilter';
 import { cloudEnabled } from '../lib/supabase';
-import { syncNow, syncStatus } from '../lib/sync';
+import { retryParked, syncNow, syncStatus } from '../lib/sync';
 import { elapsedSec, runningTimer, stopTimer } from '../lib/timer';
 import { formatClock } from '../lib/time';
 import type { SettingsData } from '../lib/types';
@@ -128,7 +128,9 @@ export function SyncBadge({ compact = false }: { compact?: boolean }) {
     s.state === 'synced' || (s.state === 'syncing' && !s.pending)
       ? s.pending
         ? `${s.pending} changes waiting`
-        : 'Synced'
+        : s.parked
+          ? `Synced, ${s.parked} not uploaded`
+          : 'Synced'
       : s.state === 'offline'
         ? `Offline${s.pending ? `, ${s.pending} waiting` : ''}`
         : s.state === 'error'
@@ -138,7 +140,7 @@ export function SyncBadge({ compact = false }: { compact?: boolean }) {
             : s.state === 'syncing'
               ? `Syncing ${s.pending}`
               : 'Local';
-  const color = s.state === 'error' ? 'var(--danger)' : s.state === 'offline' || s.state === 'signed_out' ? 'var(--ink-faint)' : 'var(--ok)';
+  const color = s.state === 'error' ? 'var(--danger)' : s.parked ? 'var(--warn)' : s.state === 'offline' || s.state === 'signed_out' ? 'var(--ink-faint)' : 'var(--ok)';
   const Icon = s.state === 'offline' ? CloudOff : s.state === 'syncing' ? RefreshCw : Cloud;
   return (
     <>
@@ -172,9 +174,16 @@ export function SyncBadge({ compact = false }: { compact?: boolean }) {
           )}
         </dl>
         <p className="mt-4 text-sm text-muted">Changes save on this device first and upload when you're online. Nothing is lost while offline.</p>
-        <button className="btn mt-4" onClick={() => void syncNow()}>
-          <RefreshCw /> Sync now
-        </button>
+        <div className="mt-4 flex flex-wrap gap-2">
+          <button className="btn" onClick={() => void syncNow()}>
+            <RefreshCw /> Sync now
+          </button>
+          {s.parked > 0 && (
+            <button className="btn" onClick={() => void retryParked()}>
+              Retry {s.parked} not uploaded
+            </button>
+          )}
+        </div>
       </Modal>
     </>
   );
