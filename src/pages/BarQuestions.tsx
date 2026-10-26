@@ -1,13 +1,13 @@
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChevronDown, Landmark, Play, Plus } from 'lucide-react';
+import { ChevronDown, FileUp, Landmark, Play, Plus } from 'lucide-react';
 import { Empty, Markdown, PageHeader, PageSkeleton, SubjectChips, SubjectTag } from '../components/ui';
 import { db } from '../lib/db';
 import { createAttempt } from '../lib/exam';
 import { useLive, useSettings, useSubjects } from '../lib/hooks';
 import { useSubjectFilter } from '../lib/subjectFilter';
 import type { Question } from '../lib/types';
-import { BulkPaste } from './Practice';
+import { BulkPaste, CsvImport } from './Practice';
 
 /** A problem counts as a past Bar question when its source names the Bar and it has a year. */
 export function isBarQuestion(q: Pick<Question, 'source_label' | 'year'>): boolean {
@@ -25,6 +25,7 @@ export default function BarQuestions() {
   const [year, setYear] = useState<number | null>(null);
   const [open, setOpen] = useState<string | null>(null);
   const [adding, setAdding] = useState(false);
+  const [importing, setImporting] = useState(false);
 
   const data = useLive(async () => {
     const qs = (await db.questions.toArray()).filter((q) => !q.deleted_at && isBarQuestion(q));
@@ -85,9 +86,14 @@ export default function BarQuestions() {
             : 'Actual questions from past Bar examinations, grouped by year and subject'
         }
         actions={
-          <button className="btn btn-primary" onClick={() => setAdding(true)}>
-            <Plus /> Add a Bar set
-          </button>
+          <>
+            <button className="btn" onClick={() => setImporting(true)}>
+              <FileUp /> Import CSV
+            </button>
+            <button className="btn btn-primary" onClick={() => setAdding(true)}>
+              <Plus /> Add a Bar set
+            </button>
+          </>
         }
       />
 
@@ -100,8 +106,8 @@ export default function BarQuestions() {
               <button className="btn btn-primary" onClick={() => setAdding(true)}>
                 <Plus /> Add a Bar set
               </button>
-              <button className="btn" onClick={() => nav('/practice')}>
-                Import CSV in the problem bank
+              <button className="btn" onClick={() => setImporting(true)}>
+                <FileUp /> Import CSV
               </button>
             </>
           }
@@ -219,6 +225,7 @@ export default function BarQuestions() {
           )}
         </>
       )}
+      {importing && <CsvImport onClose={() => setImporting(false)} subjects={subjects} />}
       {adding && <BulkPaste onClose={() => setAdding(false)} subjects={subjects} preset={{ subjectId: subject, bar: true }} />}
     </div>
   );

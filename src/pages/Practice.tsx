@@ -214,7 +214,7 @@ export function BulkPaste({
   );
 }
 
-function CsvImport({ onClose, subjects }: { onClose: () => void; subjects: Subject[] }) {
+export function CsvImport({ onClose, subjects }: { onClose: () => void; subjects: Subject[] }) {
   const [text, setText] = useState('');
   const [done, setDone] = useState<number | null>(null);
   const rows = useMemo(() => {
