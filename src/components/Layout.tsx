@@ -451,6 +451,7 @@ function UserMenu() {
             <div className="mt-2">
               <SyncBadge />
             </div>
+            <p className="mt-1.5 text-[11px] text-faint">Version {__APP_BUILD__}</p>
           </div>
           <button
             role="menuitem"

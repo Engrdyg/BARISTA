@@ -8,8 +8,12 @@ import { fileURLToPath } from 'node:url';
 // /<repo>/ (GitHub Pages).
 const base = process.env.BASE_PATH || '/';
 
+// Shown in the account menu so you can tell which version a device is running.
+const build = `${new Date().toISOString().slice(0, 10)} · ${(process.env.VERCEL_GIT_COMMIT_SHA || 'local').slice(0, 7)}`;
+
 export default defineConfig({
   base,
+  define: { __APP_BUILD__: JSON.stringify(build) },
   // NEXT_PUBLIC_ too, so Vercel's Supabase integration variables reach the app.
   envPrefix: ['VITE_', 'NEXT_PUBLIC_'],
   resolve: { alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) } },

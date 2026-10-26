@@ -27,5 +27,16 @@ async function boot() {
   if (navigator.storage?.persist) void navigator.storage.persist();
 }
 
-registerSW({ immediate: true });
+// Check for a new version every 30 minutes and whenever the app comes back to
+// the foreground; autoUpdate then reloads into it.
+registerSW({
+  immediate: true,
+  onRegisteredSW(_url, reg) {
+    if (!reg) return;
+    setInterval(() => void reg.update(), 30 * 60_000);
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') void reg.update();
+    });
+  },
+});
 void boot();
