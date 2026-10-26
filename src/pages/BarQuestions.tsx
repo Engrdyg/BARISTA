@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChevronDown, FileUp, Landmark, Lightbulb, Play, Plus } from 'lucide-react';
+import { ChevronDown, Landmark, Lightbulb, Play } from 'lucide-react';
 import { Empty, Markdown, PageHeader, PageSkeleton, SubjectChips, SubjectTag } from '../components/ui';
 import { dedupeBank } from '../lib/bank';
 import { db } from '../lib/db';
@@ -8,7 +8,6 @@ import { createAttempt } from '../lib/exam';
 import { useLive, useSettings, useSubjects } from '../lib/hooks';
 import { useSubjectFilter } from '../lib/subjectFilter';
 import type { Question } from '../lib/types';
-import { BulkPaste, CsvImport } from './Practice';
 
 /** A problem counts as a past Bar question when its source names the Bar and it has a year. */
 export function isBarQuestion(q: Pick<Question, 'source_label' | 'year'>): boolean {
@@ -26,8 +25,6 @@ export default function BarQuestions() {
   const [year, setYear] = useState<number | null>(null);
   const [open, setOpen] = useState<string | null>(null);
   const [answerFor, setAnswerFor] = useState<string | null>(null);
-  const [adding, setAdding] = useState(false);
-  const [importing, setImporting] = useState(false);
 
   const data = useLive(async () => {
     const qs = dedupeBank((await db.questions.toArray()).filter((q) => !q.deleted_at && isBarQuestion(q)));
@@ -87,34 +84,11 @@ export default function BarQuestions() {
             ? `${data.qs.length} questions from ${years.length} ${years.length === 1 ? 'Bar' : 'Bars'} · newest first`
             : 'Actual questions from past Bar examinations, grouped by year and subject'
         }
-        actions={
-          <>
-            <button className="btn" onClick={() => setImporting(true)}>
-              <FileUp /> Import CSV
-            </button>
-            <button className="btn btn-primary" onClick={() => setAdding(true)}>
-              <Plus /> Add a Bar set
-            </button>
-          </>
-        }
       />
 
       {data.qs.length === 0 ? (
-        <Empty
-          icon={Landmark}
-          title="No past Bar questions yet"
-          actions={
-            <>
-              <button className="btn btn-primary" onClick={() => setAdding(true)}>
-                <Plus /> Add a Bar set
-              </button>
-              <button className="btn" onClick={() => setImporting(true)}>
-                <FileUp /> Import CSV
-              </button>
-            </>
-          }
-        >
-          Paste one subject's questions from a Bar year at a time, numbered 1., 2., 3. They're saved with that year and subject so you can answer them the way they were asked.
+        <Empty icon={Landmark} title="Loading past Bar questions">
+          The question bank downloads the first time the app opens with an internet connection. Keep the app open for a moment, then come back to this page.
         </Empty>
       ) : (
         <>
@@ -241,8 +215,6 @@ export default function BarQuestions() {
           )}
         </>
       )}
-      {importing && <CsvImport onClose={() => setImporting(false)} subjects={subjects} />}
-      {adding && <BulkPaste onClose={() => setAdding(false)} subjects={subjects} preset={{ subjectId: subject, bar: true }} />}
     </div>
   );
 }
