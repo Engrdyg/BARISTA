@@ -1,8 +1,8 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ChevronDown, Landmark, Lightbulb, Play } from 'lucide-react';
 import { Empty, Markdown, PageHeader, PageSkeleton, SubjectChips, SubjectTag } from '../components/ui';
-import { dedupeBank } from '../lib/bank';
+import { dedupeBank, installBank } from '../lib/bank';
 import { db } from '../lib/db';
 import { createAttempt } from '../lib/exam';
 import { useLive, useSettings, useSubjects } from '../lib/hooks';
@@ -25,6 +25,9 @@ export default function BarQuestions() {
   const [year, setYear] = useState<number | null>(null);
   const [open, setOpen] = useState<string | null>(null);
   const [answerFor, setAnswerFor] = useState<string | null>(null);
+
+  // Normally done at start-up; repeated here in case that run was cut short.
+  useEffect(() => void installBank(), []);
 
   const data = useLive(async () => {
     const qs = dedupeBank((await db.questions.toArray()).filter((q) => !q.deleted_at && isBarQuestion(q)));
