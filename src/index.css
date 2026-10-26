@@ -1,0 +1,302 @@
+@import 'tailwindcss';
+
+
+:root {
+  --paper: #f5f6f8;
+  --surface: #ffffff;
+  --ink: #1d2130;
+  --ink-muted: #5b6275;
+  --rule: #d6dae1;
+  --focus: #3b6fd8;
+  --danger: #b42318;
+  --ok: #1f7a4d;
+  --hl-alpha: 1;
+  --read-paper: var(--paper);
+  --read-ink: var(--ink);
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']):not([data-theme='sepia']) {
+    --paper: #161920;
+    --surface: #1d2129;
+    --ink: #e7e9ef;
+    --ink-muted: #a3a9b8;
+    --rule: #2a2f3a;
+    --focus: #8fb0f0;
+    --danger: #f97066;
+    --ok: #6ccf9a;
+    --hl-alpha: 0.35;
+    color-scheme: dark;
+  }
+}
+
+:root[data-theme='dark'] {
+  --paper: #161920;
+  --surface: #1d2129;
+  --ink: #e7e9ef;
+  --ink-muted: #a3a9b8;
+  --rule: #2a2f3a;
+  --focus: #8fb0f0;
+  --danger: #f97066;
+  --ok: #6ccf9a;
+  --hl-alpha: 0.35;
+  color-scheme: dark;
+}
+
+/* Sepia is a reading theme: only reading surfaces change. */
+:root[data-theme='sepia'] {
+  --read-paper: #f1e9d8;
+  --read-ink: #2b2418;
+}
+
+@theme {
+  --color-paper: var(--paper);
+  --color-surface: var(--surface);
+  --color-ink: var(--ink);
+  --color-muted: var(--ink-muted);
+  --color-rule: var(--rule);
+  --color-danger: var(--danger);
+  --color-ok: var(--ok);
+  --font-ui: 'Hanken Grotesk', system-ui, sans-serif;
+  --font-read: 'Literata', Georgia, serif;
+}
+
+html {
+  font-size: calc(16px * var(--text-scale, 1));
+}
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-ui);
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+}
+
+:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Reading type: Literata, 18px phone / 19px laptop, 1.6, ≤70ch. */
+.reading {
+  font-family: var(--font-read);
+  font-size: 1.125rem;
+  line-height: var(--read-line, 1.6);
+  max-width: 70ch;
+  color: var(--read-ink);
+}
+@media (min-width: 1024px) {
+  .reading {
+    font-size: 1.1875rem;
+  }
+}
+.reading-surface {
+  background: var(--read-paper);
+  color: var(--read-ink);
+}
+
+.prose-md p {
+  margin: 0 0 0.75em;
+}
+.prose-md p:last-child {
+  margin-bottom: 0;
+}
+.prose-md ul,
+.prose-md ol {
+  margin: 0 0 0.75em;
+  padding-left: 1.4em;
+}
+.prose-md ul {
+  list-style: disc;
+}
+.prose-md ol {
+  list-style: decimal;
+}
+.prose-md h1,
+.prose-md h2,
+.prose-md h3 {
+  font-weight: 600;
+  margin: 1em 0 0.4em;
+}
+.prose-md blockquote {
+  border-left: 3px solid var(--rule);
+  padding-left: 0.8em;
+  color: var(--ink-muted);
+}
+.prose-md code {
+  font-size: 0.9em;
+  background: color-mix(in srgb, var(--ink) 8%, transparent);
+  padding: 0.1em 0.3em;
+  border-radius: 4px;
+}
+.prose-md table {
+  border-collapse: collapse;
+  margin-bottom: 0.75em;
+}
+.prose-md th,
+.prose-md td {
+  border: 1px solid var(--rule);
+  padding: 0.25em 0.5em;
+}
+.prose-md a {
+  text-decoration: underline;
+}
+
+.cloze-blank {
+  font-weight: 700;
+  color: var(--focus);
+  text-decoration: none !important;
+}
+.cloze-answer {
+  font-weight: 700;
+  background: color-mix(in srgb, #ffe14d calc(var(--hl-alpha) * 100%), transparent);
+  text-decoration: none !important;
+  padding: 0 0.15em;
+  border-radius: 3px;
+  color: inherit;
+}
+
+/* A subject tab: 4px solid edge, 15–20% tint, ink text. */
+.tab {
+  border-left: 4px solid var(--tab);
+  background: color-mix(in srgb, var(--tab) 17%, var(--surface));
+  color: var(--ink);
+}
+.tab-tint {
+  background: color-mix(in srgb, var(--tab) 12%, transparent);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  min-height: 2.5rem;
+  padding: 0 0.9rem;
+  border-radius: 0.5rem;
+  border: 1px solid var(--rule);
+  background: var(--surface);
+  color: var(--ink);
+  font-weight: 500;
+  font-size: 0.95rem;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.btn:hover {
+  border-color: var(--ink-muted);
+}
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.btn-primary {
+  background: var(--ink);
+  color: var(--paper);
+  border-color: var(--ink);
+}
+.btn-primary:hover {
+  opacity: 0.9;
+}
+.btn-ghost {
+  border-color: transparent;
+  background: transparent;
+}
+.btn-ghost:hover {
+  background: color-mix(in srgb, var(--ink) 7%, transparent);
+  border-color: transparent;
+}
+.btn-danger {
+  color: var(--danger);
+}
+.btn-sm {
+  min-height: 2rem;
+  padding: 0 0.6rem;
+  font-size: 0.875rem;
+}
+
+.input,
+.textarea,
+.select {
+  width: 100%;
+  border: 1px solid var(--rule);
+  border-radius: 0.5rem;
+  background: var(--surface);
+  color: var(--ink);
+  padding: 0.5rem 0.7rem;
+  font: inherit;
+  font-size: 1rem;
+}
+.textarea {
+  min-height: 6rem;
+  resize: vertical;
+}
+.label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--ink-muted);
+  margin-bottom: 0.25rem;
+}
+
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: 0.75rem;
+}
+
+.hl {
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--hl) calc(var(--hl-alpha) * 100%), transparent);
+}
+.hl-review {
+  outline: 2px dashed var(--danger);
+}
+
+/* Exam mode: system font on purpose, plain like exam software. */
+.exam {
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
+.exam textarea {
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
+
+.flip {
+  transition: transform 0.25s ease;
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+.scrollbar-none {
+  scrollbar-width: none;
+}
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
+@media print {
+  body {
+    background: white;
+    color: black;
+  }
+  .no-print {
+    display: none !important;
+  }
+  .print-cols {
+    columns: 2;
+    column-gap: 1.5rem;
+    font-size: 10pt;
+  }
+  .print-cols > * {
+    break-inside: avoid;
+  }
+}
