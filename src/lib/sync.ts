@@ -10,11 +10,18 @@ export type SyncState = 'local' | 'synced' | 'syncing' | 'offline' | 'error' | '
 export const syncStatus = createStore<{
   state: SyncState;
   pending: number;
+  /** Rows the server rejected; they stay on this device until retried. */
+  parked: number;
   error: string | null;
   lastSyncAt: string | null;
-}>({ state: 'local', pending: 0, error: null, lastSyncAt: null });
+}>({ state: 'local', pending: 0, parked: 0, error: null, lastSyncAt: null });
 
 const PAGE = 500;
+// Rows go up in small requests so a large import never hits request-size or
+// statement-time limits.
+const CHUNK = 50;
+
+type Parked = { table: TableName; id: string; error: string };
 // Pull re-reads a few seconds before the cursor so rows committed slightly out
 // of order are never skipped; re-applying a row is harmless.
 const OVERLAP_MS = 5000;
@@ -34,9 +41,11 @@ export function setSignedIn(v: boolean) {
 
 async function refreshPending() {
   const pending = await db.outbox.count();
+  const parked = (await getMeta<Parked[]>('sync:parked', [])).length;
   syncStatus.set((s) => ({
     ...s,
     pending,
+    parked,
     state: !supabase ? 'local' : !signedIn ? 'signed_out' : s.state,
   }));
 }
@@ -44,6 +53,57 @@ async function refreshPending() {
 function stripLocal(row: Record<string, unknown>) {
   const { synced_at: _s, ...rest } = row;
   return rest;
+}
+
+/** Errors tied to particular rows; anything else (network, auth, permissions) fails the whole run. */
+function isRowError(e: { code?: string; message: string }): boolean {
+  const code = e.code ?? '';
+  return code.startsWith('22') || code.startsWith('23') || code === '57014' || code === '54000' || /too large|timeout/i.test(e.message);
+}
+
+type UpsertError = { code?: string; message: string } | null;
+
+/**
+ * Sends rows in chunks. When a chunk is rejected for a row-level reason, halves it
+ * until the offending rows are isolated and reports each through `onRejected`.
+ */
+export async function upsertInChunks<R extends { id: string }>(
+  rows: R[],
+  upsert: (rows: R[]) => Promise<UpsertError>,
+  onRejected: (row: R, message: string) => void,
+  chunk = CHUNK,
+): Promise<void> {
+  const send = async (part: R[]): Promise<void> => {
+    const error = await upsert(part);
+    if (!error) return;
+    if (!isRowError(error)) throw new Error(error.message);
+    if (part.length === 1) return onRejected(part[0], error.message);
+    const mid = part.length >> 1;
+    await send(part.slice(0, mid));
+    await send(part.slice(mid));
+  };
+  for (let i = 0; i < rows.length; i += chunk) await send(rows.slice(i, i + chunk));
+}
+
+async function upsertRows(table: TableName, rows: Record<string, unknown>[], parked: Parked[]): Promise<void> {
+  try {
+    await upsertInChunks(
+      rows as (Record<string, unknown> & { id: string })[],
+      async (part) => (await supabase!.from(table).upsert(part, { onConflict: 'id' })).error,
+      (row, error) => parked.push({ table, id: row.id, error }),
+    );
+  } catch (e) {
+    throw new Error(`${table}: ${e instanceof Error ? e.message : String(e)}`);
+  }
+}
+
+/** Puts rows the server rejected back in the outbox for another try. */
+export async function retryParked(): Promise<void> {
+  const parked = await getMeta<Parked[]>('sync:parked', []);
+  const at = new Date().toISOString();
+  await db.outbox.bulkAdd(parked.map((p) => ({ table: p.table, id: p.id, at })));
+  await setMeta('sync:parked', []);
+  await syncNow();
 }
 
 async function push(): Promise<void> {
@@ -58,6 +118,7 @@ async function push(): Promise<void> {
       byTable.get(e.table)!.add(e.id);
     }
     const uid = getUserId();
+    const parked: Parked[] = [];
     for (const table of TABLES) {
       const ids = byTable.get(table);
       if (!ids) continue;
@@ -82,9 +143,9 @@ async function push(): Promise<void> {
       }
       const clean = rows.filter((r) => r.user_id === uid).map(stripLocal);
       if (!clean.length) continue;
-      const { error } = await supabase.from(table).upsert(clean, { onConflict: 'id' });
-      if (error) throw new Error(`${table}: ${error.message}`);
+      await upsertRows(table, clean, parked);
     }
+    if (parked.length) await setMeta('sync:parked', [...(await getMeta<Parked[]>('sync:parked', [])), ...parked]);
     await db.outbox.where('seq').belowOrEqual(maxSeq).delete();
     await refreshPending();
   }
@@ -150,7 +211,13 @@ export function syncNow(): Promise<void> {
     try {
       await push();
       await pull();
-      syncStatus.set((s) => ({ ...s, state: 'synced', error: null, lastSyncAt: new Date().toISOString() }));
+      const parked = await getMeta<Parked[]>('sync:parked', []);
+      syncStatus.set((s) => ({
+        ...s,
+        state: 'synced',
+        error: parked.length ? `${parked.length} item(s) were not accepted by the server: ${parked[0].table}: ${parked[0].error}` : null,
+        lastSyncAt: new Date().toISOString(),
+      }));
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
       const offline = typeof navigator !== 'undefined' && !navigator.onLine;
