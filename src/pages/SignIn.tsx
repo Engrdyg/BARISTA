@@ -17,7 +17,7 @@ export default function SignIn() {
   return (
     <main className="mx-auto flex min-h-dvh max-w-sm flex-col justify-center px-4 py-10">
       <h1 className="text-3xl font-bold tracking-tight">BARISTA</h1>
-      <p className="mt-1 text-muted">Bar review companion for the 2027 Bar.</p>
+      <p className="mt-1 text-muted">Bar review companion, made for Shendy Anne Catulin-Dayag.</p>
       <form className="panel mt-8 space-y-4 p-5" onSubmit={submit}>
         <div>
           <label className="label" htmlFor="email">
