@@ -1,4 +1,6 @@
 import { useMemo, useState } from 'react';
+import { BookOpen, Plus } from 'lucide-react';
+import { useSubjectFilter } from '../lib/subjectFilter';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { Bar, Empty, Field, Modal, PageHeader, SubjectChips, SubjectSelect, SubjectTag } from '../components/ui';
 import { db } from '../lib/db';
@@ -183,7 +185,7 @@ export default function Codals() {
   const subjects = useSubjects();
   const [params, setParams] = useSearchParams();
   const nodeFilter = params.get('node');
-  const [subject, setSubject] = useState<string | null>(null);
+  const [subject, setSubject] = useSubjectFilter();
   const [adding, setAdding] = useState(false);
   const data = useLive(async () => {
     const laws = (await db.laws.toArray()).filter((l) => !l.deleted_at);
@@ -212,11 +214,12 @@ export default function Codals() {
   return (
     <div className="space-y-4">
       <PageHeader
+        icon={BookOpen}
         title="Codals"
-        subtitle="Laws and provisions"
+        subtitle="Laws and provisions, read and marked like your own codal"
         actions={
           <button className="btn btn-primary" onClick={() => setAdding(true)}>
-            Add a law
+            <Plus /> Add a law
           </button>
         }
       />
@@ -248,18 +251,25 @@ export default function Codals() {
       )}
       <SubjectChips subjects={subjects} value={subject} onChange={setSubject} />
       {laws.length === 0 ? (
-        <Empty>
-          <p>No laws yet.</p>
-          <p className="mt-1 text-sm">Paste a law's full text (from the Official Gazette or a codal you own) and the app splits it into provisions.</p>
+        <Empty
+          icon={BookOpen}
+          title="Your codal shelf is empty"
+          actions={
+            <button className="btn btn-primary" onClick={() => setAdding(true)}>
+              <Plus /> Add a law
+            </button>
+          }
+        >
+          Paste a law's full text (from the Official Gazette or a codal you own) and BARISTA splits it into provisions you can read, highlight and turn into cards.
         </Empty>
       ) : (
-        <ul className="space-y-2">
+        <ul className="grid gap-4 md:grid-cols-2">
           {laws.map((l) => {
             const s = data.stats.get(l.id) ?? { total: 0, r1: 0, r2: 0, r3: 0, starred: 0 };
             const subj = subjects.find((x) => x.id === l.primary_subject_id);
             return (
               <li key={l.id}>
-                <Link to={`/codals/${l.id}`} className="panel block p-4">
+                <Link to={`/codals/${l.id}`} className="panel card-hover block h-full p-5">
                   <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0">
                       <div className="font-semibold">

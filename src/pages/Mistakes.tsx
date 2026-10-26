@@ -1,4 +1,7 @@
 import { useState } from 'react';
+import { Plus, TriangleAlert } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { useSubjectFilter } from '../lib/subjectFilter';
 import { useSearchParams } from 'react-router-dom';
 import CardEditor, { type CardDraft } from '../components/CardEditor';
 import { NodeSelect } from '../components/TimerDialog';
@@ -65,7 +68,7 @@ export default function Mistakes() {
   const subjects = useSubjects();
   const [params, setParams] = useSearchParams();
   const nodeFilter = params.get('node');
-  const [subject, setSubject] = useState<string | null>(null);
+  const [subject, setSubject] = useSubjectFilter();
   const [status, setStatus] = useState<'open' | 'fixed' | 'all'>('open');
   const [editing, setEditing] = useState<Mistake | null>(null);
   const [card, setCard] = useState<{ draft: CardDraft; mistake: Mistake } | null>(null);
@@ -95,11 +98,12 @@ export default function Mistakes() {
   return (
     <div className="space-y-4">
       <PageHeader
-        title="Mistake log"
+        icon={TriangleAlert}
+        title="Mistake review"
         subtitle={`${data.ms.filter((m) => m.status === 'open').length} open`}
         actions={
           <button className="btn btn-primary" onClick={() => setEditing(blank())}>
-            Add mistake
+            <Plus /> Add mistake
           </button>
         }
       />
@@ -136,7 +140,23 @@ export default function Mistakes() {
         ))}
       </div>
       {list.length === 0 ? (
-        <Empty>{data.ms.length ? 'Nothing here.' : 'No mistakes logged. After grading, use Add to mistake log on a problem you missed.'}</Empty>
+        data.ms.length ? (
+          <Empty icon={TriangleAlert} title="Nothing here" compact>
+            No mistakes match this filter.
+          </Empty>
+        ) : (
+          <Empty
+            icon={TriangleAlert}
+            title="No mistakes logged"
+            actions={
+              <Link to="/practice" className="btn btn-primary">
+                Start a drill
+              </Link>
+            }
+          >
+            Every rule you miss is a point you can win back. After grading a problem, use Add to mistake log, and fix it here before the Bar.
+          </Empty>
+        )
       ) : (
         <ul className="space-y-2">
           {list.map((m) => (

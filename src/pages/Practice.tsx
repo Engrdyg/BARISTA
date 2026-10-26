@@ -1,4 +1,6 @@
 import { useMemo, useState } from 'react';
+import { useSubjectFilter } from '../lib/subjectFilter';
+import { PenLine } from 'lucide-react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { NodeSelect } from '../components/TimerDialog';
 import { download, Empty, Field, Markdown, Modal, PageHeader, Section, SubjectChips, SubjectSelect, SubjectTag } from '../components/ui';
@@ -253,7 +255,8 @@ function StartPanel({ subjects }: { subjects: Subject[] }) {
   const exam = useExam();
   const [params] = useSearchParams();
   const [mode, setMode] = useState<'drill' | 'mock' | 'bar_day'>('drill');
-  const [subject, setSubject] = useState<string | null>(subjects[0]?.id ?? null);
+  const [filterSubject] = useSubjectFilter();
+  const [subject, setSubject] = useState<string | null>(filterSubject ?? subjects[0]?.id ?? null);
   const [node, setNode] = useState<string | null>(params.get('node'));
   const [source, setSource] = useState('');
   const [filter, setFilter] = useState<'any' | 'never' | 'low'>('any');
@@ -363,7 +366,7 @@ export default function Practice() {
   const subjects = useSubjects();
   const [params] = useSearchParams();
   const [tab, setTab] = useState<'start' | 'bank' | 'history'>(params.get('node') ? 'bank' : 'start');
-  const [subject, setSubject] = useState<string | null>(null);
+  const [subject, setSubject] = useSubjectFilter();
   const [q, setQ] = useState('');
   const [editing, setEditing] = useState<Question | null>(null);
   const [bulk, setBulk] = useState(false);
@@ -403,7 +406,7 @@ export default function Practice() {
 
   return (
     <div className="space-y-4">
-      <PageHeader title="Practice" subtitle={`${data.questions.length} problems in the bank`} />
+      <PageHeader icon={PenLine} title="Essay practice" subtitle={`${data.questions.length} problems in the bank · 20 problems, 4 hours, like the real Bar`} />
       {inProgress.length > 0 && (
         <Section title="In progress">
           <ul className="space-y-2">
@@ -465,7 +468,22 @@ export default function Practice() {
           <SubjectChips subjects={subjects} value={subject} onChange={setSubject} />
           <input className="input max-w-sm" placeholder="Filter problems" value={q} onChange={(e) => setQ(e.target.value)} aria-label="Filter problems" />
           {bank.length === 0 ? (
-            <Empty>No problems yet. Paste a numbered set from a past Bar or a mock exam.</Empty>
+            <Empty
+              icon={PenLine}
+              title="Your problem bank is empty"
+              actions={
+                <>
+                  <button className="btn btn-primary" onClick={() => setBulk(true)}>
+                    Paste a set
+                  </button>
+                  <button className="btn" onClick={() => setEditing(emptyQuestion(subject))}>
+                    New problem
+                  </button>
+                </>
+              }
+            >
+              Paste a numbered set from a past Bar or a mock exam. Add your reference answers so you can grade yourself.
+            </Empty>
           ) : (
             <ul className="panel divide-y divide-rule">
               {bank.map((x) => {
@@ -496,7 +514,9 @@ export default function Practice() {
       {tab === 'history' && (
         <div>
           {data.attempts.filter((a) => a.status !== 'in_progress').length === 0 ? (
-            <Empty>No attempts yet.</Empty>
+            <Empty icon={PenLine} title="No attempts yet" actions={<button className="btn btn-primary" onClick={() => setTab('start')}>Start a drill</button>}>
+              Drills, mocks and mock Bar days you finish appear here with their scores.
+            </Empty>
           ) : (
             <ul className="panel divide-y divide-rule">
               {data.attempts

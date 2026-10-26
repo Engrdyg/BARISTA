@@ -234,6 +234,9 @@ export default function Attempt() {
           Submit
         </button>
       </header>
+      <div className="h-1 w-full bg-elevated" role="progressbar" aria-label="Problems answered" aria-valuenow={answered} aria-valuemin={0} aria-valuemax={items.length}>
+        <div className="bar-grow h-full bg-accent" style={{ width: `${items.length ? (answered / items.length) * 100 : 0}%` }} />
+      </div>
       {warning && (
         <div className="bg-[#FFE14D] px-3 py-1.5 text-center text-sm font-semibold text-[#1D2130]" role="alert">
           {warning}

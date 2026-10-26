@@ -1,4 +1,6 @@
 import { useMemo, useState } from 'react';
+import { Layers, Play, Plus, Shuffle } from 'lucide-react';
+import { useSubjectFilter } from '../lib/subjectFilter';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { Bar as RBar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { axis, ChartTooltip, grid, Legend } from '../components/charts';
@@ -185,7 +187,8 @@ export default function Cards() {
   const settings = useSettings();
   const [params, setParams] = useSearchParams();
   const nodeFilter = params.get('node');
-  const [subject, setSubject] = useState<string | null>(params.get('subject'));
+  const [filterSubject, setSubject] = useSubjectFilter();
+  const subject = params.get('subject') ?? filterSubject;
   const [q, setQ] = useState('');
   const [view, setView] = useState<'all' | 'leeches' | 'suspended' | 'starred'>('all');
   const [editing, setEditing] = useState<CardRow | null | undefined>(undefined);
@@ -225,18 +228,19 @@ export default function Cards() {
   return (
     <div className="space-y-4">
       <PageHeader
-        title="Cards"
+        icon={Layers}
+        title="Flashcards"
         subtitle={`${data.due} due · ${data.fresh} new today · ${data.cards.length} cards`}
         actions={
           <>
             <Link to={`/cards/review${subject ? `?subject=${subject}` : ''}`} className={`btn btn-primary ${data.due + data.fresh ? '' : 'pointer-events-none opacity-50'}`}>
-              Review
+              <Play /> Review
             </Link>
             <button className="btn" onClick={() => setEditing(null)}>
-              New card
+              <Plus /> New card
             </button>
             <button className="btn" onClick={() => setCram(true)}>
-              Cram
+              <Shuffle /> Cram
             </button>
           </>
         }
@@ -259,9 +263,28 @@ export default function Cards() {
         ))}
       </div>
       {list.length === 0 ? (
-        <Empty>
-          {data.cards.length === 0 ? 'No cards yet. Make cards from a provision or a digest, or add one here.' : 'No cards match.'}
-        </Empty>
+        data.cards.length === 0 ? (
+          <Empty
+            icon={Layers}
+            title="No flashcards yet"
+            actions={
+              <>
+                <button className="btn btn-primary" onClick={() => setEditing(null)}>
+                  <Plus /> Create flashcards
+                </button>
+                <button className="btn" onClick={() => setImporting(true)}>
+                  Import CSV / Anki
+                </button>
+              </>
+            }
+          >
+            Turn important provisions and legal concepts into effective review cards. You can also make them from a codal highlight or a digest.
+          </Empty>
+        ) : (
+          <Empty icon={Layers} title="No cards match" compact>
+            Try another subject or clear the filter.
+          </Empty>
+        )
       ) : (
         <ul className="panel divide-y divide-rule">
           {shown.map((c) => {

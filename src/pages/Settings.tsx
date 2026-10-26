@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Settings as SettingsIcon } from 'lucide-react';
 import { SyncBadge } from '../components/Layout';
 import { download, Field, PageHeader, Section, SubjectTag } from '../components/ui';
 import { authState, signIn, signOut } from '../lib/auth';
@@ -297,7 +298,7 @@ export default function Settings() {
 
   return (
     <div className="space-y-4">
-      <PageHeader title="Settings" />
+      <PageHeader icon={SettingsIcon} title="Settings" subtitle="Exam details, study preferences, appearance and backups" />
       <Account />
       <Section title="You">
         <Field label="How the app greets you" htmlFor="s-name">

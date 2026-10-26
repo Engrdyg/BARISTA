@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Check, ChevronLeft, Pencil, Plus, Search, Star as StarIcon } from 'lucide-react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import CardEditor, { type CardDraft } from '../components/CardEditor';
 import { NodeSelect } from '../components/TimerDialog';
-import { Field, Markdown, Modal, Star, SubjectSelect, SubjectTag } from '../components/ui';
+import { Bar, Field, Markdown, Modal, Star, SubjectSelect, SubjectTag } from '../components/ui';
 import { clozeFromRanges } from '../lib/cloze';
 import { db } from '../lib/db';
 import { adjustForEdit, offsetIn, segments } from '../lib/highlights';
@@ -308,31 +309,61 @@ export default function LawView() {
 
   return (
     <div>
-      <div className="mb-4">
-        <Link to="/codals" className="text-sm text-muted underline">
-          Codals
+      <div className="mb-6">
+        <Link to="/codals" className="inline-flex items-center gap-1 text-sm text-muted hover:text-ink">
+          <ChevronLeft className="h-4 w-4" aria-hidden /> Codals
         </Link>
-        <h1 className="mt-1 text-2xl font-semibold">
+        <h1 className="t-title mt-2">
           {law.short_name && <span className="mr-2">{law.short_name}</span>}
-          <span className="font-normal">{law.title}</span>
+          <span className="font-normal text-muted">{law.title}</span>
         </h1>
         <p className="mt-1 flex flex-wrap items-center gap-2 text-sm text-muted">
           <SubjectTag subject={subj} />
           {law.citation} · {read1} of {data.provisions.length} read at least once
         </p>
-        <div className="mt-3 flex flex-wrap gap-2">
-          <input className="input max-w-xs" placeholder="Find in this law" value={filter} onChange={(e) => setFilter(e.target.value)} aria-label="Find in this law" />
+        <div className="mt-3 max-w-md">
+          <Bar value={data.provisions.length ? read1 / data.provisions.length : 0} size="sm" color={subj?.color} label="Provisions read" />
+        </div>
+        <div className="mt-4 flex flex-wrap gap-2">
+          <div className="relative w-full max-w-xs">
+            <Search className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-faint" aria-hidden />
+            <input className="input pl-9" placeholder="Find in this law" value={filter} onChange={(e) => setFilter(e.target.value)} aria-label="Find in this law" />
+          </div>
           <button className="btn" onClick={() => setAdding(true)}>
-            Add text
+            <Plus /> Add text
           </button>
           <button className="btn btn-ghost" onClick={() => setEditLaw(true)}>
-            Edit law
+            <Pencil /> Edit law
           </button>
         </div>
-        <p className="mt-2 hidden text-xs text-muted lg:block">j / k next and previous · r mark read · h highlight selection</p>
+        <p className="mt-3 hidden gap-4 text-xs text-muted lg:flex">
+          <span><kbd className="kbd">j</kbd> <kbd className="kbd">k</kbd> next / previous</span>
+          <span><kbd className="kbd">r</kbd> mark read</span>
+          <span><kbd className="kbd">h</kbd> highlight selection</span>
+        </p>
       </div>
 
-      <div className="reading-surface -mx-4 rounded-none px-4 py-2 lg:mx-0 lg:rounded-xl lg:px-8">
+      <div className="lg:grid lg:grid-cols-[15rem_minmax(0,1fr)] lg:gap-8">
+      <nav className="sticky top-20 hidden max-h-[calc(100dvh-6rem)] self-start overflow-y-auto pr-1 scrollbar-thin lg:block" aria-label="Contents">
+        <p className="t-eyebrow mb-2 px-2">Contents</p>
+        <ul className="space-y-px">
+          {list.map((p, i) => (
+            <li key={p.id}>
+              <button
+                onClick={() => go(i)}
+                className={`flex w-full items-center gap-2 rounded-md px-2 py-1 text-left text-[0.8125rem] ${i === active ? 'bg-[var(--accent-soft)] font-medium text-ink' : 'text-muted hover:bg-elevated hover:text-ink'}`}
+                aria-current={i === active}
+              >
+                <span className="flex-1 truncate">{p.label}</span>
+                {p.starred && <StarIcon className="h-3 w-3 fill-[#F59E0B] text-[#F59E0B]" aria-label="Starred" />}
+                {p.read_count > 0 && <Check className="h-3 w-3 text-ok" aria-label={`Read ${p.read_count} times`} />}
+              </button>
+            </li>
+          ))}
+        </ul>
+      </nav>
+
+      <div className="reading-surface -mx-4 rounded-none border-y border-rule px-4 py-2 lg:mx-0 lg:rounded-2xl lg:border lg:px-10">
         {list.length === 0 && <p className="py-6 text-muted">{data.provisions.length ? 'No provisions match.' : 'No provisions yet. Use Add text to paste this law.'}</p>}
         {list.map((p, i) => {
           const hls = data.byP.get(p.id) ?? [];
@@ -343,10 +374,10 @@ export default function LawView() {
               ref={(el) => {
                 if (el) refs.current.set(p.id, el);
               }}
-              className={`scroll-mt-24 border-b border-rule py-5 last:border-b-0 ${i === active ? 'lg:-ml-4 lg:border-l-4 lg:border-l-[var(--ink-muted)] lg:pl-3' : ''}`}
+              className={`relative scroll-mt-24 border-b border-rule py-6 last:border-b-0 ${i === active ? 'before:absolute before:top-6 before:bottom-6 before:-left-4 before:w-[3px] before:rounded-full before:bg-accent lg:before:-left-6' : ''}`}
               onClick={() => setActive(i)}
             >
-              {p.heading && <p className="mb-2 text-sm font-semibold whitespace-pre-wrap text-muted">{p.heading}</p>}
+              {p.heading && <p className="t-eyebrow mb-3 whitespace-pre-wrap">{p.heading}</p>}
               <ProvisionText p={p} hls={hls} legend={legend} onHighlightClick={setHlMenu} />
               {p.notes && (
                 <div className="mt-3 rounded-lg border border-rule p-3 text-sm">
@@ -355,7 +386,7 @@ export default function LawView() {
               )}
               <div className="mt-3 flex flex-wrap items-center gap-1">
                 <button className="btn btn-sm" onClick={() => void markRead(p)}>
-                  Mark read{p.read_count ? ` · ${p.read_count}×` : ''}
+                  <Check /> Mark read{p.read_count ? ` · ${p.read_count}×` : ''}
                 </button>
                 <Star on={p.starred} onClick={() => void patch('provisions', p.id, { starred: !p.starred })} />
                 <button className="btn btn-sm btn-ghost" onClick={() => setCloze(p)}>
@@ -369,6 +400,7 @@ export default function LawView() {
             </article>
           );
         })}
+      </div>
       </div>
 
       {sel && (

@@ -1,4 +1,6 @@
 import { lazy, Suspense, useEffect } from 'react';
+import { PageSkeleton } from './components/ui';
+import { Wordmark } from './components/Layout';
 import { createBrowserRouter, Navigate, RouterProvider } from 'react-router-dom';
 import Layout from './components/Layout';
 import { authState } from './lib/auth';
@@ -28,7 +30,7 @@ const Lmt = lazy(() => import('./pages/Lmt'));
 const Baon = lazy(() => import('./pages/Baon'));
 
 const wrap = (el: React.ReactNode) => (
-  <Suspense fallback={<div className="p-6 text-muted">Loading…</div>}>{el}</Suspense>
+  <Suspense fallback={<PageSkeleton />}>{el}</Suspense>
 );
 
 const revieweeRouter = () =>
@@ -92,7 +94,14 @@ function useTheme() {
 export default function App() {
   const auth = useStore(authState);
   useTheme();
-  if (!auth.ready) return <div className="p-6 text-muted">Opening…</div>;
+  if (!auth.ready)
+    return (
+      <div className="flex min-h-dvh items-center justify-center" aria-busy="true" aria-label="Opening BARISTA">
+        <span className="animate-pulse">
+          <Wordmark />
+        </span>
+      </div>
+    );
   if (!auth.email && !auth.localOnly) return <SignIn />;
   if (auth.role === 'supporter') {
     routers.supporter ??= supporterRouter();

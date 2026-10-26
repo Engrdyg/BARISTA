@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { ChevronDown, ChevronRight, ListChecks, Search, Upload } from 'lucide-react';
 import { Link, useParams } from 'react-router-dom';
 import LinkPicker from '../components/LinkPicker';
 import TimerDialog from '../components/TimerDialog';
@@ -300,6 +301,7 @@ export default function SyllabusSubject() {
   const settings = useSettings();
   const [importing, setImporting] = useState(false);
   const [filter, setFilter] = useState<Filter>('all');
+  const [query, setQuery] = useState('');
   const [openId, setOpenId] = useState<string | null>(null);
   const [collapsed, setCollapsed] = useState<Set<string> | null>(null);
 
@@ -347,16 +349,19 @@ export default function SyllabusSubject() {
   const collapsedSet = collapsed ?? new Set(nodes.filter((n) => parents.has(n.id) && depthOf(n) >= 1).map((n) => n.id));
 
   const cutoff = Date.now() - 30 * 86_400_000;
-  const matches = (n: SyllabusNode) =>
+  const needle = query.trim().toLowerCase();
+  const matchesFilter = (n: SyllabusNode) =>
     filter === 'all' ||
     (filter === 'needs_work' && n.needs_work) ||
     (filter === 'starred' && n.starred) ||
     (filter === 'not_started' && !parents.has(n.id) && n.status === 'not_started') ||
     (filter === 'stale' && !parents.has(n.id) && (!n.last_studied_at || Date.parse(n.last_studied_at) < cutoff));
+  const matches = (n: SyllabusNode) => matchesFilter(n) && (!needle || `${n.marker} ${n.title} ${n.notes}`.toLowerCase().includes(needle));
+  const filtering = filter !== 'all' || !!needle;
 
   // Filtered view: matching nodes plus their ancestors; otherwise honor collapse.
   let visible: SyllabusNode[];
-  if (filter !== 'all') {
+  if (filtering) {
     const keep = new Set<string>();
     for (const n of nodes)
       if (matches(n)) {
@@ -408,7 +413,7 @@ export default function SyllabusSubject() {
         subtitle={cov === null ? 'No syllabus yet' : `${Math.round(cov * 100)}% covered · weight ${subject.weight}%`}
         actions={
           <button className="btn" onClick={() => setImporting(true)}>
-            {nodes.length ? 'Re-import' : 'Import syllabus'}
+            <Upload /> {nodes.length ? 'Re-import' : 'Import syllabus'}
           </button>
         }
       />
@@ -419,22 +424,30 @@ export default function SyllabusSubject() {
       )}
 
       {nodes.length === 0 ? (
-        <Empty>
-          <p>No syllabus for {subject.code} yet.</p>
-          <p className="mt-1 text-sm">Paste the text of the official 2027 syllabus and the app turns it into a checklist.</p>
-          <button className="btn btn-primary mt-3" onClick={() => setImporting(true)}>
-            Import syllabus
-          </button>
+        <Empty
+          icon={ListChecks}
+          title={`No ${subject.code} syllabus yet`}
+          actions={
+            <button className="btn btn-primary" onClick={() => setImporting(true)}>
+              <Upload /> Import syllabus
+            </button>
+          }
+        >
+          Paste the text of the official 2027 syllabus and BARISTA turns it into a checklist that tracks your coverage.
         </Empty>
       ) : (
         <>
-          <div className="scrollbar-none -mx-4 mb-3 flex gap-2 overflow-x-auto px-4">
+          <div className="relative mb-3 max-w-md">
+            <Search className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-faint" aria-hidden />
+            <input className="input pl-9" placeholder={`Search ${subject.code} topics`} value={query} onChange={(e) => setQuery(e.target.value)} aria-label="Search topics" />
+          </div>
+          <div className="scrollbar-none -mx-4 mb-3 flex gap-2 overflow-x-auto px-4 lg:mx-0 lg:px-0">
             {filters.map(([f, label]) => (
               <button key={f} className={`btn btn-sm shrink-0 ${filter === f ? 'btn-primary' : ''}`} onClick={() => setFilter(f)}>
                 {label}
               </button>
             ))}
-            {filter === 'all' && (
+            {!filtering && (
               <button className="btn btn-sm btn-ghost shrink-0" onClick={() => setCollapsed(collapsedSet.size ? new Set() : null)}>
                 {collapsedSet.size ? 'Expand all' : 'Collapse'}
               </button>
@@ -449,8 +462,8 @@ export default function SyllabusSubject() {
               return (
                 <li key={n.id} className="flex items-center gap-2 py-2 pr-3" style={{ paddingLeft: `${0.5 + depthOf(n) * 1.1}rem` }}>
                   {isParent ? (
-                    <button className="w-6 shrink-0 text-muted" onClick={() => toggle(n.id)} aria-label={collapsedSet.has(n.id) ? 'Expand' : 'Collapse'} aria-expanded={!collapsedSet.has(n.id)}>
-                      {filter === 'all' && collapsedSet.has(n.id) ? '▸' : '▾'}
+                    <button className="flex w-6 shrink-0 justify-center text-muted" onClick={() => toggle(n.id)} aria-label={collapsedSet.has(n.id) ? 'Expand' : 'Collapse'} aria-expanded={!collapsedSet.has(n.id)}>
+                      {!filtering && collapsedSet.has(n.id) ? <ChevronRight className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                     </button>
                   ) : (
                     <span className="w-6 shrink-0" />

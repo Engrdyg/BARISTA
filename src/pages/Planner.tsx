@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { CalendarRange } from 'lucide-react';
 import { Empty, Field, Modal, PageHeader, Section, SubjectSelect, SubjectTag, tabStyle } from '../components/ui';
 import { DIFFICULTY_FACTOR, plannerShares } from '../lib/calc';
 import { db } from '../lib/db';
@@ -184,7 +185,7 @@ export default function Planner() {
 
   return (
     <div className="space-y-4">
-      <PageHeader title="Planner" subtitle={data.plan ? `${phase ? PHASE_LABELS[phase.key] : 'Plan'} · generated ${shortDate(manilaDate(data.plan.generated_at))}` : 'No plan yet'} />
+      <PageHeader icon={CalendarRange} title="My study plan" subtitle={data.plan ? `${phase ? PHASE_LABELS[phase.key] : 'Plan'} · generated ${shortDate(manilaDate(data.plan.generated_at))}` : 'No plan yet'} />
 
       {data.plan && (
         <Section
@@ -353,7 +354,9 @@ export default function Planner() {
         }
       >
         {data.events.filter((e) => manilaDate(e.ends_at) >= today).length === 0 ? (
-          <Empty>Review-center lectures, mock exams and personal commitments go here. Their time is taken out before blocks are planned.</Empty>
+          <Empty icon={CalendarRange} title="No fixed events" compact actions={<button className="btn btn-sm" onClick={() => setEventOpen(true)}>Add event</button>}>
+            Review-center lectures, mock exams and personal commitments go here. Their time is taken out before blocks are planned.
+          </Empty>
         ) : (
           <ul className="divide-y divide-rule">
             {data.events

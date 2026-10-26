@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react';
+import { Gavel, Plus, Zap } from 'lucide-react';
+import { useSubjectFilter } from '../lib/subjectFilter';
 import { useSearchParams } from 'react-router-dom';
 import CardEditor, { type CardDraft } from '../components/CardEditor';
 import { NodeSelect } from '../components/TimerDialog';
@@ -186,14 +188,14 @@ function DigestView({ d, onClose, onEdit }: { d: Digest; onClose: () => void; on
           {d.division && <span>{d.division === 'en_banc' ? 'En Banc' : 'Division'}</span>}
           <CoverageBadge digest={d} exam={exam} />
         </div>
-        <section className="reading-surface rounded-lg p-3">
-          <h3 className="mb-1 text-sm font-semibold">Doctrine</h3>
+        <section className="reading-surface rounded-xl border-l-4 border-accent p-4" aria-label="Doctrine">
+          <h3 className="t-eyebrow mb-1.5 text-accent">Doctrine</h3>
           <Markdown className="reading">{d.doctrine}</Markdown>
         </section>
         {(['facts', 'issues', 'ruling', 'notes'] as const).map((k) =>
           d[k] ? (
-            <section key={k}>
-              <h3 className="mb-1 text-sm font-semibold">{k[0].toUpperCase() + k.slice(1)}</h3>
+            <section key={k} className="border-t border-rule pt-4" aria-label={k}>
+              <h3 className="t-eyebrow mb-1.5">{k[0].toUpperCase() + k.slice(1)}</h3>
               <Markdown className="reading">{d[k]}</Markdown>
             </section>
           ) : null,
@@ -242,7 +244,7 @@ export default function Digests() {
   const exam = useExam();
   const [params, setParams] = useSearchParams();
   const nodeFilter = params.get('node');
-  const [subject, setSubject] = useState<string | null>(null);
+  const [subject, setSubject] = useSubjectFilter();
   const [q, setQ] = useState('');
   const [year, setYear] = useState('');
   const [cov, setCov] = useState<'all' | 'in' | 'after'>('all');
@@ -275,15 +277,16 @@ export default function Digests() {
   return (
     <div className="space-y-4">
       <PageHeader
+        icon={Gavel}
         title="Case digests"
         subtitle={`${data.ds.length} digests`}
         actions={
           <>
             <button className="btn btn-primary" onClick={() => setEditing({ d: emptyDigest(subject), quick: true })}>
-              Quick add
+              <Zap /> Quick add
             </button>
             <button className="btn" onClick={() => setEditing({ d: emptyDigest(subject), quick: false })}>
-              New digest
+              <Plus /> New digest
             </button>
           </>
         }
@@ -319,7 +322,23 @@ export default function Digests() {
         </button>
       </div>
       {list.length === 0 ? (
-        <Empty>{data.ds.length ? 'No digests match.' : 'No digests yet. Quick add needs only the case title and the doctrine.'}</Empty>
+        data.ds.length ? (
+          <Empty icon={Gavel} title="No digests match" compact>
+            Try another subject, year or coverage filter.
+          </Empty>
+        ) : (
+          <Empty
+            icon={Gavel}
+            title="No case digests yet"
+            actions={
+              <button className="btn btn-primary" onClick={() => setEditing({ d: emptyDigest(subject), quick: true })}>
+                <Zap /> Quick add a case
+              </button>
+            }
+          >
+            Quick add needs only the case title and its doctrine, under 30 seconds on your phone. Fill in facts, issues and ruling later.
+          </Empty>
+        )
       ) : (
         <ul className="panel divide-y divide-rule">
           {list.map((d) => (

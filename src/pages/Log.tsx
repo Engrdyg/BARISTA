@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { NotebookPen, Plus } from 'lucide-react';
 import TimerDialog, { KINDS, NodeSelect } from '../components/TimerDialog';
 import { Empty, Field, Modal, PageHeader, Section, SubjectSelect, SubjectTag } from '../components/ui';
 import { db } from '../lib/db';
@@ -147,11 +148,12 @@ export default function Log() {
   return (
     <div className="space-y-4">
       <PageHeader
+        icon={NotebookPen}
         title="Study log"
         subtitle={`${formatDuration(today)} today`}
         actions={
           <button className="btn" onClick={() => setEditing(null)}>
-            Add time
+            <Plus /> Add time
           </button>
         }
       />
@@ -165,7 +167,9 @@ export default function Log() {
       )}
       <Running />
       {sessions.length === 0 ? (
-        <Empty>No study time logged yet. Start the timer, or add time studied away from the app.</Empty>
+        <Empty icon={NotebookPen} title="No study time logged yet" actions={<button className="btn" onClick={() => setEditing(null)}><Plus /> Add time</button>}>
+          Start the timer above, or add time you studied away from the app. Card reviews and exams log their own time.
+        </Empty>
       ) : (
         [...byDay].map(([d, list]) => (
           <section key={d}>
