@@ -9,7 +9,7 @@ test('full mock survives a crash, then submits and grades', async ({ browser }) 
 
   // 20 Civil Law problems via bulk paste.
   await page.getByRole('tab', { name: 'Problem bank' }).click();
-  await page.getByRole('button', { name: 'Paste a set' }).click();
+  await page.getByRole('button', { name: 'Paste a set' }).first().click();
   const dialog = page.getByRole('dialog');
   await dialog.locator('select').first().selectOption({ label: 'CIV — Civil Law and Land Titles and Deeds' });
   await dialog.getByLabel('Source').fill('Mock 1');

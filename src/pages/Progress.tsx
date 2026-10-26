@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { LineChart as LineChartIcon } from 'lucide-react';
 import { Bar as RBar, BarChart, CartesianGrid, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { axis, ChartTooltip, grid, Legend } from '../components/charts';
 import { Bar, PageHeader, Section, SubjectTag } from '../components/ui';
@@ -92,7 +93,7 @@ export default function Progress() {
 
   return (
     <div className="space-y-4">
-      <PageHeader title="Progress" subtitle="Projections are self-graded estimates" />
+      <PageHeader icon={LineChartIcon} title="Progress" subtitle="Coverage, hours, retention and projected GWA · projections are self-graded estimates" />
 
       <Section title="Coverage">
         <div className="mb-3 flex items-baseline gap-3">

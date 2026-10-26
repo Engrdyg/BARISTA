@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { X } from 'lucide-react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import CardEditor from '../components/CardEditor';
-import { Markdown, SubjectTag } from '../components/ui';
+import { Bar, Markdown, SubjectTag } from '../components/ui';
 import { isLeech } from '../lib/calc';
 import { renderCloze } from '../lib/cloze';
 import { db } from '../lib/db';
@@ -178,17 +179,20 @@ export default function Review() {
   const back = isCloze ? renderCloze(current.card.cloze_text, current.item.cloze_index!, 'back') : current.card.back;
 
   return (
-    <div className="mx-auto flex min-h-[calc(100dvh-12rem)] max-w-2xl flex-col">
-      <div className="mb-3 flex items-center justify-between text-sm text-muted">
-        <Link to="/cards" className="underline">
-          End session
+    <div className="mx-auto flex max-w-2xl flex-col">
+      <div className="mb-3 flex items-center justify-between gap-3 text-sm text-muted">
+        <Link to="/cards" className="btn btn-ghost btn-sm -ml-2">
+          <X /> End session
         </Link>
-        <span>
+        <span className="tabular-nums">
           {cram && 'Cram · '}
           {done} done · {queue.length} left
         </span>
       </div>
-      <article className="panel reading-surface flex-1 p-5">
+      <div className="mb-4">
+        <Bar value={done / Math.max(1, done + queue.length)} size="sm" label="Session progress" />
+      </div>
+      <article key={`${current.item.id}-${revealed}`} className={`panel reading-surface min-h-[16rem] p-6 shadow-[var(--shadow-md)] lg:p-8 ${revealed ? 'flip-in' : 'page-in'}`}>
         <div className="mb-3 flex items-center gap-2 text-xs text-muted">
           <SubjectTag subject={subject} />
           {current.item.state === State.New ? 'New' : current.item.state === State.Review ? 'Review' : 'Learning'}
@@ -212,18 +216,24 @@ export default function Review() {
         ) : (
           <div className="grid grid-cols-4 gap-2">
             {GRADES.map((g) => (
-              <button key={g.rating} className={`btn h-16 flex-col gap-0 ${g.rating === 3 ? 'btn-primary' : ''}`} onClick={() => grade(g.rating)}>
+              <button
+                key={g.rating}
+                className={`btn h-16 flex-col gap-0 ${g.rating === 3 ? 'btn-primary' : ''}`}
+                style={g.rating === 3 ? undefined : { borderColor: `color-mix(in srgb, ${['', 'var(--danger)', 'var(--warn)', '', 'var(--ok)'][g.rating]} 45%, var(--rule))` }}
+                onClick={() => grade(g.rating)}
+                aria-keyshortcuts={g.key}
+              >
                 <span className="font-semibold">{g.label}</span>
                 <span className="text-xs opacity-75">{cram && !settings.cramReschedules ? g.key : intervals[g.rating]}</span>
               </button>
             ))}
           </div>
         )}
-        <div className="mt-2 hidden justify-center gap-4 text-xs text-muted lg:flex">
-          <span>Space reveal</span>
-          <span>1–4 grade</span>
-          <span>U undo</span>
-          <span>E edit</span>
+        <div className="mt-3 hidden justify-center gap-5 text-xs text-muted lg:flex">
+          <span><kbd className="kbd">Space</kbd> reveal</span>
+          <span><kbd className="kbd">1</kbd>–<kbd className="kbd">4</kbd> grade</span>
+          <span><kbd className="kbd">U</kbd> undo</span>
+          <span><kbd className="kbd">E</kbd> edit</span>
         </div>
         <div className="mt-2 flex justify-center gap-2 lg:hidden">
           <button className="btn btn-sm btn-ghost" onClick={() => void doUndo()} disabled={!undo.length}>

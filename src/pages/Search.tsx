@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Search as SearchIcon } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Empty, PageHeader, SubjectChips, SubjectTag } from '../components/ui';
 import { db } from '../lib/db';
@@ -58,7 +59,7 @@ export default function Search() {
 
   return (
     <div className="space-y-4">
-      <PageHeader title="Search" />
+      <PageHeader icon={SearchIcon} title="Search" subtitle="Everything you've added, offline. Try Art. 1156, 1156 NCC, or a G.R. No." />
       <form
         onSubmit={(e) => {
           e.preventDefault();
@@ -86,7 +87,7 @@ export default function Search() {
       <SubjectChips subjects={subjects} value={subject} onChange={setSubject} />
       {q.trim() &&
         (res.hits.length === 0 ? (
-          <Empty>No results.</Empty>
+          <Empty icon={SearchIcon} title="No results" compact>Check the spelling, or search a provision number like Art. 1156.</Empty>
         ) : (
           <>
             <p className="text-xs text-muted">

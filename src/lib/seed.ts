@@ -19,7 +19,7 @@ export function defaultSettings(): SettingsData {
     neglectDays: d.neglectDays,
     pomodoroWork: 25,
     pomodoroBreak: 5,
-    theme: 'system',
+    theme: 'dark',
     textSize: 100,
     lineHeight: 1.6,
     highlightLegend: d.highlightLegend,

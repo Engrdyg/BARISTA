@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { FileText, Printer, Star } from 'lucide-react';
 import Listen from '../components/Listen';
 import { Empty, Markdown, PageHeader, SubjectChips } from '../components/ui';
 import { stripCloze } from '../lib/cloze';
@@ -39,11 +40,12 @@ export default function Lmt() {
     <div>
       <div className="no-print space-y-3">
         <PageHeader
+          icon={FileText}
           title="LMT sheets"
           subtitle="Starred doctrines, starred provisions and open mistakes, ready to print"
           actions={
             <button className="btn btn-primary" onClick={() => window.print()}>
-              Print or save as PDF
+              <Printer /> Print or save as PDF
             </button>
           }
         />
@@ -54,7 +56,7 @@ export default function Lmt() {
         <h1 className="mb-3 text-xl font-bold">
           {subject.code} · {subject.name}
         </h1>
-        {empty && <Empty>Star doctrines, provisions, cards and syllabus items while you study; they collect here.</Empty>}
+        {empty && <Empty icon={Star} title="Nothing starred yet">Star doctrines, provisions, cards and syllabus items while you study; they collect here as your last-minute tips.</Empty>}
         {data && (
           <div className="print-cols space-y-3 text-sm leading-snug sm:columns-2 sm:gap-6">
             {data.digests.length > 0 && <h2 className="font-semibold">Doctrines</h2>}

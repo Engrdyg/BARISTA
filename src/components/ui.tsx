@@ -1,6 +1,7 @@
 import { useEffect, useRef, type CSSProperties, type ReactNode } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import { Star as StarIcon, X, type LucideIcon } from 'lucide-react';
 import type { Subject } from '../lib/types';
 
 export function Markdown({ children, className = '' }: { children: string; className?: string }) {
@@ -30,15 +31,16 @@ export function tabStyle(color: string | undefined): CSSProperties {
   return { ['--tab' as string]: color ?? '#888' };
 }
 
-/** A subject's code shown as a small codal tab (never color alone). */
+/** A subject's code shown as a small tab (never color alone). */
 export function SubjectTag({ subject, className = '' }: { subject?: Subject | null; className?: string }) {
   if (!subject) return null;
   return (
     <span
-      className={`tab inline-flex items-center rounded-r px-1.5 py-0.5 text-xs font-semibold tracking-wide ${className}`}
+      className={`inline-flex items-center gap-1.5 rounded-md border border-rule bg-elevated px-1.5 py-0.5 text-[0.6875rem] font-semibold tracking-wide text-ink ${className}`}
       style={tabStyle(subject.color)}
       title={subject.name}
     >
+      <span className="subject-dot" aria-hidden />
       {subject.code}
     </span>
   );
@@ -55,28 +57,20 @@ export function SubjectChips({
   onChange: (id: string | null) => void;
   allowAll?: boolean;
 }) {
+  const chip = (active: boolean) =>
+    `inline-flex shrink-0 items-center gap-2 rounded-lg border px-3 py-1.5 text-sm font-medium transition-colors ${
+      active ? 'border-[var(--tab,var(--accent))] bg-[color-mix(in_srgb,var(--tab,var(--accent))_14%,var(--surface))] text-ink' : 'border-rule bg-surface text-muted hover:border-rule-strong hover:text-ink'
+    }`;
   return (
-    <div className="scrollbar-none -mx-4 flex gap-2 overflow-x-auto px-4 pb-1" role="tablist">
+    <div className="scrollbar-none -mx-4 flex gap-2 overflow-x-auto px-4 pb-1 lg:mx-0 lg:flex-wrap lg:px-0" role="tablist" aria-label="Subject">
       {allowAll && (
-        <button
-          role="tab"
-          aria-selected={value === null}
-          className={`btn btn-sm shrink-0 ${value === null ? 'btn-primary' : ''}`}
-          onClick={() => onChange(null)}
-        >
-          All
+        <button role="tab" aria-selected={value === null} className={chip(value === null)} onClick={() => onChange(null)}>
+          All subjects
         </button>
       )}
       {subjects.map((s) => (
-        <button
-          key={s.id}
-          role="tab"
-          aria-selected={value === s.id}
-          onClick={() => onChange(s.id)}
-          className={`tab shrink-0 rounded-r-md px-3 py-1.5 text-sm font-semibold ${value === s.id ? 'ring-2 ring-[var(--ink)]' : ''}`}
-          style={tabStyle(s.color)}
-          title={s.name}
-        >
+        <button key={s.id} role="tab" aria-selected={value === s.id} onClick={() => onChange(s.id)} className={chip(value === s.id)} style={tabStyle(s.color)} title={s.name}>
+          <span className="subject-dot" aria-hidden />
           {s.code}
         </button>
       ))}
@@ -134,17 +128,18 @@ export function Modal({
       ref={ref}
       onClose={onClose}
       onCancel={onClose}
-      className={`m-auto w-[calc(100%-1rem)] ${wide ? 'max-w-4xl' : 'max-w-lg'} rounded-xl border border-rule bg-surface p-0 text-ink backdrop:bg-black/40`}
+      aria-label={title}
+      className={`m-auto w-[calc(100%-1rem)] ${wide ? 'max-w-4xl' : 'max-w-lg'} rounded-2xl border border-rule bg-surface p-0 text-ink shadow-[var(--shadow-lg)] backdrop:bg-black/50 backdrop:backdrop-blur-[2px]`}
     >
       {open && (
-        <div className="flex max-h-[90vh] flex-col">
-          <div className="flex items-center justify-between border-b border-rule px-4 py-3">
-            <h2 className="text-lg font-semibold">{title}</h2>
-            <button className="btn btn-ghost btn-sm" onClick={onClose} aria-label="Close">
-              ✕
+        <div className="page-in flex max-h-[90vh] flex-col">
+          <div className="flex items-center justify-between gap-3 border-b border-rule px-5 py-3.5">
+            <h2 className="t-section truncate">{title}</h2>
+            <button className="btn btn-ghost btn-icon btn-sm" onClick={onClose} aria-label="Close">
+              <X />
             </button>
           </div>
-          <div className="overflow-y-auto p-4">{children}</div>
+          <div className="scrollbar-thin overflow-y-auto p-5">{children}</div>
         </div>
       )}
     </dialog>
@@ -156,35 +151,91 @@ export function PageHeader({
   subtitle,
   actions,
   color,
+  icon: Icon,
+  eyebrow,
 }: {
   title: ReactNode;
   subtitle?: ReactNode;
   actions?: ReactNode;
   color?: string;
+  icon?: LucideIcon;
+  eyebrow?: ReactNode;
 }) {
   return (
     <header
-      className={`mb-4 flex flex-wrap items-end justify-between gap-3 ${color ? 'tab-tint -mx-4 rounded-b-xl px-4 pt-4 pb-3 lg:-mx-8 lg:px-8' : ''}`}
+      className={`mb-6 flex flex-wrap items-end justify-between gap-4 ${color ? 'tab-tint -mx-4 rounded-2xl px-4 pt-5 pb-4 lg:-mx-6 lg:px-6' : ''}`}
       style={color ? tabStyle(color) : undefined}
     >
-      <div className="min-w-0">
-        <h1 className="text-2xl font-semibold">{title}</h1>
-        {subtitle && <p className="mt-0.5 text-sm text-muted">{subtitle}</p>}
+      <div className="flex min-w-0 items-start gap-3">
+        {Icon && (
+          <span className="mt-0.5 hidden h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-rule bg-surface text-accent shadow-[var(--shadow-sm)] sm:flex" aria-hidden>
+            <Icon className="h-5 w-5" />
+          </span>
+        )}
+        <div className="min-w-0">
+          {eyebrow && <p className="t-eyebrow mb-1">{eyebrow}</p>}
+          <h1 className="t-title">{title}</h1>
+          {subtitle && <p className="mt-1 text-sm text-muted">{subtitle}</p>}
+        </div>
       </div>
       {actions && <div className="flex flex-wrap gap-2">{actions}</div>}
     </header>
   );
 }
 
-export function Empty({ children }: { children: ReactNode }) {
-  return <div className="rounded-xl border border-dashed border-rule p-6 text-center text-muted">{children}</div>;
+/** Empty state: an icon, a heading, one helpful sentence, and the next action. */
+export function Empty({
+  children,
+  icon: Icon,
+  title,
+  actions,
+  compact = false,
+}: {
+  children?: ReactNode;
+  icon?: LucideIcon;
+  title?: string;
+  actions?: ReactNode;
+  compact?: boolean;
+}) {
+  return (
+    <div className={`flex flex-col items-center justify-center rounded-xl border border-dashed border-rule-strong text-center ${compact ? 'px-4 py-6' : 'px-6 py-10'}`}>
+      {Icon && (
+        <span className="mb-3 flex h-11 w-11 items-center justify-center rounded-xl bg-[var(--accent-soft)] text-accent" aria-hidden>
+          <Icon className="h-5 w-5" />
+        </span>
+      )}
+      {title && <h3 className="t-section">{title}</h3>}
+      {children && <div className={`max-w-md text-sm text-muted ${title ? 'mt-1' : ''}`}>{children}</div>}
+      {actions && <div className="mt-4 flex flex-wrap justify-center gap-2">{actions}</div>}
+    </div>
+  );
 }
 
-export function Section({ title, children, action }: { title: string; children: ReactNode; action?: ReactNode }) {
+export function Section({
+  title,
+  children,
+  action,
+  icon: Icon,
+  description,
+  className = '',
+}: {
+  title: string;
+  children: ReactNode;
+  action?: ReactNode;
+  icon?: LucideIcon;
+  description?: ReactNode;
+  className?: string;
+}) {
   return (
-    <section className="panel p-4">
-      <div className="mb-2 flex items-center justify-between gap-2">
-        <h2 className="font-semibold">{title}</h2>
+    <section className={`panel p-5 ${className}`} aria-label={title}>
+      <div className="mb-4 flex items-start justify-between gap-3">
+        <div className="flex min-w-0 items-center gap-2.5">
+          {Icon && <Icon className="h-4 w-4 shrink-0 text-muted" aria-hidden />}
+          <div className="min-w-0">
+            <h2 className="t-section">{title}</h2>
+            {description && <p className="mt-0.5 text-xs text-muted">{description}</p>}
+          </div>
+        </div>
         {action}
       </div>
       {children}
@@ -194,16 +245,8 @@ export function Section({ title, children, action }: { title: string; children: 
 
 export function Star({ on, onClick }: { on: boolean; onClick: () => void }) {
   return (
-    <button
-      className="btn btn-ghost btn-sm"
-      onClick={onClick}
-      aria-pressed={on}
-      aria-label={on ? 'Unstar' : 'Star'}
-      title={on ? 'Starred' : 'Star'}
-    >
-      <span aria-hidden className={on ? 'text-[#E08A1E]' : 'text-muted'}>
-        {on ? '★' : '☆'}
-      </span>
+    <button className="btn btn-ghost btn-sm btn-icon" onClick={onClick} aria-pressed={on} aria-label={on ? 'Unstar' : 'Star'} title={on ? 'Starred' : 'Star'}>
+      <StarIcon className={on ? 'pop fill-[#F59E0B] text-[#F59E0B]' : 'text-muted'} />
     </button>
   );
 }
@@ -219,17 +262,64 @@ export function Field({ label, children, htmlFor }: { label: string; children: R
   );
 }
 
-export function Bar({ value, color }: { value: number; color?: string }) {
+export function Bar({ value, color, size = 'md', label }: { value: number; color?: string; size?: 'sm' | 'md'; label?: string }) {
   const pct = Math.round(Math.max(0, Math.min(1, value)) * 100);
   return (
     <div
-      className="h-2 w-full overflow-hidden rounded-full bg-[color-mix(in_srgb,var(--ink)_10%,transparent)]"
+      className={`${size === 'sm' ? 'h-1.5' : 'h-2'} w-full overflow-hidden rounded-full bg-elevated`}
       role="progressbar"
+      aria-label={label}
       aria-valuenow={pct}
       aria-valuemin={0}
       aria-valuemax={100}
     >
-      <div className="h-full rounded-full" style={{ width: `${pct}%`, background: color ?? 'var(--ink)' }} />
+      <div className="bar-grow h-full rounded-full" style={{ width: `${pct}%`, background: color ?? 'var(--accent)' }} />
+    </div>
+  );
+}
+
+/** Circular progress, 0–1. */
+export function Ring({ value, size = 44, stroke = 4, color, label }: { value: number; size?: number; stroke?: number; color?: string; label?: string }) {
+  const r = (size - stroke) / 2;
+  const c = 2 * Math.PI * r;
+  const v = Math.max(0, Math.min(1, value));
+  return (
+    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} role="img" aria-label={label ?? `${Math.round(v * 100)}%`} className="-rotate-90 shrink-0">
+      <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="var(--elevated)" strokeWidth={stroke} />
+      <circle
+        cx={size / 2}
+        cy={size / 2}
+        r={r}
+        fill="none"
+        stroke={color ?? 'var(--accent)'}
+        strokeWidth={stroke}
+        strokeLinecap="round"
+        strokeDasharray={c}
+        strokeDashoffset={c * (1 - v)}
+        style={{ transition: 'stroke-dashoffset 500ms cubic-bezier(0.2,0.7,0.2,1)' }}
+      />
+    </svg>
+  );
+}
+
+export function Skeleton({ className = '' }: { className?: string }) {
+  return <div className={`skeleton ${className}`} aria-hidden />;
+}
+
+/** Placeholder layout shown while a page's data loads. */
+export function PageSkeleton() {
+  return (
+    <div className="space-y-6" aria-busy="true" aria-label="Loading">
+      <div className="space-y-2">
+        <Skeleton className="h-4 w-32" />
+        <Skeleton className="h-8 w-64" />
+      </div>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {[0, 1, 2, 3].map((i) => (
+          <Skeleton key={i} className="h-24" />
+        ))}
+      </div>
+      <Skeleton className="h-64" />
     </div>
   );
 }

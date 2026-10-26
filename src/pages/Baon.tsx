@@ -64,7 +64,7 @@ export default function Baon() {
       <section className="mt-6">
         <h2 className="mb-2 font-semibold">Your notes</h2>
         {notes.length === 0 ? (
-          <Empty>No notes yet.</Empty>
+          <Empty title="No notes yet">Write the first one above. She'll see it on her Today screen.</Empty>
         ) : (
           <ul className="space-y-2">
             {notes.map((n) => (

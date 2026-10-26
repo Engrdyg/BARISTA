@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Wordmark } from '../components/Layout';
 import { continueLocalOnly, signIn } from '../lib/auth';
 
 export default function SignIn() {
@@ -15,9 +16,14 @@ export default function SignIn() {
   }
 
   return (
-    <main className="mx-auto flex min-h-dvh max-w-sm flex-col justify-center px-4 py-10">
-      <h1 className="text-3xl font-bold tracking-tight">BARISTA</h1>
-      <p className="mt-1 text-muted">Bar review companion, made for Shendy Anne Catulin-Dayag.</p>
+    <main
+      className="flex min-h-dvh flex-col items-center justify-center px-4 py-10"
+      style={{ backgroundImage: 'radial-gradient(800px 400px at 50% -10%, color-mix(in srgb, var(--accent) 16%, transparent), transparent 70%)' }}
+    >
+      <div className="w-full max-w-sm">
+      <Wordmark />
+      <h1 className="mt-8 text-2xl font-semibold tracking-tight">Welcome back</h1>
+      <p className="mt-1 text-sm text-muted">Bar review companion, made for Shendy Anne Catulin-Dayag.</p>
       <form className="panel mt-8 space-y-4 p-5" onSubmit={submit}>
         <div>
           <label className="label" htmlFor="email">
@@ -62,6 +68,7 @@ export default function SignIn() {
       <p className="mt-2 text-center text-xs text-muted">
         Anything you add is kept and uploads when you sign in later.
       </p>
+      </div>
     </main>
   );
 }
