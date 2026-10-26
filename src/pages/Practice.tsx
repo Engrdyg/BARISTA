@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useSubjectFilter } from '../lib/subjectFilter';
-import { PenLine } from 'lucide-react';
+import { FileUp, PenLine, Upload } from 'lucide-react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { NodeSelect } from '../components/TimerDialog';
 import { download, Empty, Field, Markdown, Modal, PageHeader, Section, SubjectChips, SubjectSelect, SubjectTag } from '../components/ui';
@@ -217,6 +217,12 @@ export function BulkPaste({
 export function CsvImport({ onClose, subjects }: { onClose: () => void; subjects: Subject[] }) {
   const [text, setText] = useState('');
   const [done, setDone] = useState<number | null>(null);
+  const [fileName, setFileName] = useState<string | null>(null);
+  const [drag, setDrag] = useState(false);
+  async function load(f: File) {
+    setText(await f.text());
+    setFileName(f.name);
+  }
   const rows = useMemo(() => {
     const r = parseDelimited(text);
     if (!r.length) return [];
@@ -247,11 +253,24 @@ export function CsvImport({ onClose, subjects }: { onClose: () => void; subjects
         <p>Imported {done} problems.</p>
       ) : (
         <div className="space-y-3">
-          <p className="text-sm text-muted">Columns: subject (code), type, source_label, year, number, text, points, reference_answer, form_type, notes. Same as the export.</p>
-          <input type="file" accept=".csv,.tsv,.txt" onChange={async (e) => { const f = e.target.files?.[0]; if (f) setText(await f.text()); }} />
-          <textarea className="textarea min-h-[10rem] font-mono text-sm" value={text} onChange={(e) => setText(e.target.value)} aria-label="CSV" />
+          <label
+            className={`flex cursor-pointer flex-col items-center gap-2 rounded-xl border-2 border-dashed px-4 py-8 text-center transition-colors hover:border-accent hover:bg-elevated focus-within:border-accent ${drag ? 'border-accent bg-elevated' : 'border-rule-strong'}`}
+            onDragOver={(e) => { e.preventDefault(); setDrag(true); }}
+            onDragLeave={() => setDrag(false)}
+            onDrop={(e) => { e.preventDefault(); setDrag(false); const f = e.dataTransfer.files?.[0]; if (f) void load(f); }}
+          >
+            <FileUp className="h-8 w-8 text-accent" aria-hidden />
+            <span className="font-medium">{fileName ?? 'Choose a CSV file'}</span>
+            <span className="text-sm text-muted">{fileName ? `${rows.length} problems found · tap to pick another file` : 'Tap to browse, or drop the file here'}</span>
+            <input type="file" accept=".csv,.tsv,.txt,text/csv" className="sr-only" onChange={(e) => { const f = e.target.files?.[0]; if (f) void load(f); }} />
+          </label>
+          <details className="text-sm">
+            <summary className="cursor-pointer text-muted">Or paste CSV text</summary>
+            <p className="mt-2 text-muted">Columns: subject (code), type, source_label, year, number, text, points, reference_answer, form_type, notes. Same as the export.</p>
+            <textarea className="textarea mt-2 min-h-[10rem] font-mono text-sm" value={text} onChange={(e) => { setText(e.target.value); setFileName(null); }} aria-label="CSV" />
+          </details>
           <button className="btn btn-primary" disabled={!rows.length} onClick={async () => { await putRows('questions', rows); setDone(rows.length); }}>
-            Import {rows.length || ''} problems
+            <Upload /> Import {rows.length || ''} problems
           </button>
         </div>
       )}
