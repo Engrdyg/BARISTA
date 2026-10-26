@@ -156,6 +156,7 @@ export function SyncBadge({ compact = false }: { compact?: boolean }) {
         </span>
         {!compact && label}
       </button>
+      {!compact && s.error && <p className="mt-1 max-w-56 text-xs break-words text-danger">{s.error}</p>}
       <Modal open={open} onClose={() => setOpen(false)} title="Sync">
         <dl className="space-y-3 text-sm">
           <div>
