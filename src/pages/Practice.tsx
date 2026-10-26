@@ -214,9 +214,38 @@ export function BulkPaste({
   );
 }
 
+/** A row with the same subject, source and number as a saved problem updates it instead of adding a copy. */
+async function importQuestions(rows: Question[]): Promise<{ added: number; updated: number }> {
+  const key = (q: Pick<Question, 'subject_id' | 'source_label' | 'number'>) =>
+    q.source_label && q.number ? `${q.subject_id}|${q.source_label.trim().toLowerCase()}|${q.number.trim()}` : null;
+  const existing = new Map<string, Question>();
+  for (const q of await db.questions.toArray()) {
+    const k = key(q);
+    if (k && !q.deleted_at) existing.set(k, q);
+  }
+  let updated = 0;
+  const out = rows.map((r) => {
+    const k = key(r);
+    const prev = k ? existing.get(k) : undefined;
+    if (!prev) return r;
+    updated++;
+    return {
+      ...prev,
+      type: r.type,
+      year: r.year ?? prev.year,
+      text: r.text || prev.text,
+      reference_answer: r.reference_answer || prev.reference_answer,
+      form_type: r.form_type || prev.form_type,
+      notes: r.notes || prev.notes,
+    };
+  });
+  await putRows('questions', out);
+  return { added: out.length - updated, updated };
+}
+
 export function CsvImport({ onClose, subjects }: { onClose: () => void; subjects: Subject[] }) {
   const [text, setText] = useState('');
-  const [done, setDone] = useState<number | null>(null);
+  const [done, setDone] = useState<{ added: number; updated: number } | null>(null);
   const [fileName, setFileName] = useState<string | null>(null);
   const [drag, setDrag] = useState(false);
   async function load(f: File) {
@@ -250,7 +279,10 @@ export function CsvImport({ onClose, subjects }: { onClose: () => void; subjects
   return (
     <Modal open onClose={onClose} title="Import problems from CSV" wide>
       {done !== null ? (
-        <p>Imported {done} problems.</p>
+        <p>
+          Imported {done.added} new {done.added === 1 ? 'problem' : 'problems'}
+          {done.updated ? ` and updated ${done.updated} you already had` : ''}.
+        </p>
       ) : (
         <div className="space-y-3">
           <label
@@ -269,7 +301,7 @@ export function CsvImport({ onClose, subjects }: { onClose: () => void; subjects
             <p className="mt-2 text-muted">Columns: subject (code), type, source_label, year, number, text, points, reference_answer, form_type, notes. Same as the export.</p>
             <textarea className="textarea mt-2 min-h-[10rem] font-mono text-sm" value={text} onChange={(e) => { setText(e.target.value); setFileName(null); }} aria-label="CSV" />
           </details>
-          <button className="btn btn-primary" disabled={!rows.length} onClick={async () => { await putRows('questions', rows); setDone(rows.length); }}>
+          <button className="btn btn-primary" disabled={!rows.length} onClick={async () => setDone(await importQuestions(rows))}>
             <Upload /> Import {rows.length || ''} problems
           </button>
         </div>
