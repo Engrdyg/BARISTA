@@ -10,6 +10,8 @@ const base = process.env.BASE_PATH || '/';
 
 export default defineConfig({
   base,
+  // NEXT_PUBLIC_ too, so Vercel's Supabase integration variables reach the app.
+  envPrefix: ['VITE_', 'NEXT_PUBLIC_'],
   resolve: { alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) } },
   plugins: [
     react(),
