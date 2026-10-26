@@ -6,7 +6,7 @@
   "outputDirectory": "dist",
   "rewrites": [
     {
-      "source": "/((?!assets/|sw.js|workbox-|manifest.webmanifest|icon|apple-touch-icon).*)",
+      "source": "/((?!assets/|bar/|sw.js|workbox-|manifest.webmanifest|icon|apple-touch-icon).*)",
       "destination": "/index.html"
     }
   ],

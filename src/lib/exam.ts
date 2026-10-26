@@ -1,5 +1,6 @@
 import { db } from './db';
 import { getDeviceId, uuid } from './identity';
+import { dedupeBank } from './bank';
 import { makeRow, patch, putRows } from './repo';
 import { logSession, pauseTimer } from './timer';
 import { nowIso } from './time';
@@ -83,7 +84,7 @@ export async function pickQuestions(opts: {
   source?: string | null;
   filter?: 'any' | 'never' | 'low';
 }): Promise<string[]> {
-  let qs = (await db.questions.toArray()).filter(
+  let qs = dedupeBank(await db.questions.toArray()).filter(
     (q) => !q.deleted_at && (!opts.subjectId || q.subject_id === opts.subjectId) && (!opts.source || q.source_label === opts.source),
   );
   if (opts.nodeId) {
