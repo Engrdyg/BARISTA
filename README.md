@@ -1,4 +1,4 @@
-# Tiyaga — Bar review companion
+# BARISTA — Bar review companion
 
 A personal, installable web app (PWA) for one reviewee preparing for the **2027 Philippine Bar Examinations**: syllabus tracker, codals with highlights, spaced-repetition cards, case digests, essay drills and mock exams, a planner, and progress projections. Works offline; syncs a laptop and a phone when Supabase is set up.
 
@@ -77,4 +77,4 @@ tests/, e2e/      Vitest unit tests and the Playwright mock-exam test
 
 ## Open questions from the spec
 
-The working name is still "Tiyaga"; review-center schedule, existing Anki decks, phone platform and whether to skip First read are left to set in the app (Planner, Cards → Import, Settings).
+Review-center schedule, existing Anki decks, phone platform and whether to skip First read are left to set in the app (Planner, Cards → Import, Settings).

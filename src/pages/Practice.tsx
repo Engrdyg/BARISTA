@@ -450,7 +450,7 @@ export default function Practice() {
               className="btn"
               onClick={() =>
                 download(
-                  `tiyaga-problems-${todayManila()}.csv`,
+                  `barista-problems-${todayManila()}.csv`,
                   toCsv(
                     data.questions.map((x) => ({ ...x, subject: subjects.find((s) => s.id === x.subject_id)?.code ?? '' })),
                     ['subject', 'type', 'source_label', 'year', 'number', 'text', 'points', 'reference_answer', 'form_type', 'notes'],

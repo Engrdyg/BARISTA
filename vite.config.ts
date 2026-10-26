@@ -18,8 +18,8 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['icon.svg', 'apple-touch-icon.png'],
       manifest: {
-        name: 'Tiyaga — Bar review companion',
-        short_name: 'Tiyaga',
+        name: 'BARISTA — Bar review companion',
+        short_name: 'BARISTA',
         description: 'Syllabus, cards, digests and essay practice for the 2027 Bar.',
         theme_color: '#1D2130',
         background_color: '#F5F6F8',

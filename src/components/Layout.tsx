@@ -141,7 +141,7 @@ export default function Layout() {
   return (
     <div className="min-h-dvh lg:flex">
       <aside className="no-print sticky top-0 hidden h-dvh w-52 shrink-0 flex-col border-r border-rule bg-surface px-3 py-4 lg:flex">
-        <div className="mb-4 px-3 text-lg font-bold tracking-tight">Tiyaga</div>
+        <div className="mb-4 px-3 text-lg font-bold tracking-tight">BARISTA</div>
         <nav className="space-y-0.5">
           {[...MAIN, ...MORE].map((l) => (
             <NavLink key={l.to} to={l.to} className={linkCls}>
@@ -157,7 +157,7 @@ export default function Layout() {
       </aside>
       <div className="min-w-0 flex-1">
         <div className="no-print sticky top-0 z-20 flex items-center justify-between gap-2 border-b border-rule bg-paper/95 px-4 py-2 backdrop-blur lg:hidden">
-          <span className="font-bold">Tiyaga</span>
+          <span className="font-bold">BARISTA</span>
           <SyncBadge />
         </div>
         <div className="no-print sticky top-11 z-10 px-4 pt-2 lg:top-0 lg:px-8">

@@ -301,7 +301,7 @@ export default function Cards() {
           className="btn"
           onClick={() =>
             download(
-              `tiyaga-cards-${today}.csv`,
+              `barista-cards-${today}.csv`,
               toCsv(
                 data.cards.map((c) => ({
                   front: c.type === 'cloze' ? c.cloze_text : c.front,

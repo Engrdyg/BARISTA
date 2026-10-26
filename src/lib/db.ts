@@ -49,14 +49,14 @@ export const TABLES: TableName[] = [
 type Tables = { [K in TableName]: Table<TableMap[K], string> };
 
 // Class/interface merge: gives db.cards, db.subjects, … their row types.
-export interface TiyagaDB extends Tables {}
+export interface BaristaDB extends Tables {}
 
-export class TiyagaDB extends Dexie {
+export class BaristaDB extends Dexie {
   outbox!: Table<OutboxEntry, number>;
   meta!: Table<MetaEntry, string>;
   snapshots!: Table<Snapshot, string>;
 
-  constructor(name = 'tiyaga') {
+  constructor(name = 'barista') {
     super(name);
     this.version(1).stores({
       profiles: 'id',
@@ -93,7 +93,7 @@ export class TiyagaDB extends Dexie {
   }
 }
 
-export const db = new TiyagaDB();
+export const db = new BaristaDB();
 
 export async function getMeta<T>(key: string, fallback: T): Promise<T> {
   const row = await db.meta.get(key);

@@ -5,7 +5,7 @@ import { nowIso, todayManila } from './time';
 import type { TableName } from './types';
 
 export interface BackupFile {
-  app: 'tiyaga';
+  app: 'barista';
   version: 1;
   exported_at: string;
   tables: Partial<Record<TableName, unknown[]>>;
@@ -14,7 +14,7 @@ export interface BackupFile {
 export async function exportAll(): Promise<BackupFile> {
   const tables: BackupFile['tables'] = {};
   for (const t of TABLES) tables[t] = await db.t(t).toArray();
-  return { app: 'tiyaga', version: 1, exported_at: nowIso(), tables };
+  return { app: 'barista', version: 1, exported_at: nowIso(), tables };
 }
 
 export async function isEmptyAccount(): Promise<boolean> {
@@ -30,7 +30,7 @@ export async function isEmptyAccount(): Promise<boolean> {
  * by the current user and queued for sync.
  */
 export async function importBackup(file: BackupFile): Promise<{ added: number; updated: number; skipped: number }> {
-  if (file?.app !== 'tiyaga' || !file.tables) throw new Error('This is not a Tiyaga backup file.');
+  if (file?.app !== 'barista' || !file.tables) throw new Error('This is not a BARISTA backup file.');
   const uid = getUserId();
   // Seeded rows (subjects, exam config, settings) have per-account ids; map the
   // backup's onto this account's by code or name so nothing is duplicated.

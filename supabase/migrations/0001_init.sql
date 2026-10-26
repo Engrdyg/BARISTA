@@ -1,4 +1,4 @@
--- Tiyaga schema. Every study table is owned by one user (user_id) and is
+-- BARISTA schema. Every study table is owned by one user (user_id) and is
 -- readable and writable only by that user, and only if their profile role is
 -- 'reviewee'. baon_notes has its own policies (spec §5.12).
 --
@@ -30,7 +30,7 @@ language sql stable security definer set search_path = public as $$
 $$;
 
 -- Shared columns for every owned table.
-create or replace function public.tiyaga_owned_table(tname text, cols text) returns void
+create or replace function public.barista_owned_table(tname text, cols text) returns void
 language plpgsql as $$
 begin
   execute format(
@@ -53,9 +53,9 @@ begin
        with check (user_id = auth.uid() and public.is_reviewee())', tname);
 end $$;
 
-select tiyaga_owned_table('settings', $c$ data jsonb not null default '{}'::jsonb $c$);
+select barista_owned_table('settings', $c$ data jsonb not null default '{}'::jsonb $c$);
 
-select tiyaga_owned_table('exam_configs', $c$
+select barista_owned_table('exam_configs', $c$
   name text not null,
   day1 date not null, day2 date not null, day3 date not null,
   am_start text not null, am_end text not null, pm_start text not null, pm_end text not null,
@@ -66,13 +66,13 @@ select tiyaga_owned_table('exam_configs', $c$
   is_active boolean not null default true
 $c$);
 
-select tiyaga_owned_table('subjects', $c$
+select barista_owned_table('subjects', $c$
   code text not null, name text not null, weight numeric not null,
   exam_day int not null, session text not null, color text not null,
   difficulty text not null default 'normal', sort int not null default 0
 $c$);
 
-select tiyaga_owned_table('syllabus_nodes', $c$
+select barista_owned_table('syllabus_nodes', $c$
   subject_id uuid not null, parent_id uuid, marker text not null default '',
   title text not null, sort int not null default 0, depth int not null default 0,
   status text not null default 'not_started', needs_work boolean not null default false,
@@ -81,23 +81,23 @@ select tiyaga_owned_table('syllabus_nodes', $c$
   unmatched boolean not null default false
 $c$);
 
-select tiyaga_owned_table('laws', $c$
+select barista_owned_table('laws', $c$
   title text not null, short_name text not null default '', citation text not null default '',
   primary_subject_id uuid, source_url text not null default '', split_patterns jsonb
 $c$);
 
-select tiyaga_owned_table('provisions', $c$
+select barista_owned_table('provisions', $c$
   law_id uuid not null, label text not null, heading text not null default '', text text not null,
   sort int not null default 0, read_count int not null default 0, last_read_at timestamptz,
   notes text not null default '', starred boolean not null default false
 $c$);
 
-select tiyaga_owned_table('highlights', $c$
+select barista_owned_table('highlights', $c$
   provision_id uuid not null, start int not null, "end" int not null,
   color_key text not null, needs_review boolean not null default false
 $c$);
 
-select tiyaga_owned_table('digests', $c$
+select barista_owned_table('digests', $c$
   subject_id uuid, title text not null, gr_no text not null default '', promulgated_on date,
   ponente text not null default '', division text, doctrine text not null,
   facts text not null default '', issues text not null default '', ruling text not null default '',
@@ -105,14 +105,14 @@ select tiyaga_owned_table('digests', $c$
   source_url text not null default '', starred boolean not null default false
 $c$);
 
-select tiyaga_owned_table('cards', $c$
+select barista_owned_table('cards', $c$
   subject_id uuid, type text not null, front text not null default '', back text not null default '',
   cloze_text text not null default '', source_type text, source_id uuid,
   tags text[] not null default '{}', suspended boolean not null default false,
   starred boolean not null default false
 $c$);
 
-select tiyaga_owned_table('card_items', $c$
+select barista_owned_table('card_items', $c$
   card_id uuid not null, cloze_index int,
   due timestamptz not null, stability double precision not null default 0,
   difficulty double precision not null default 0, elapsed_days int not null default 0,
@@ -121,7 +121,7 @@ select tiyaga_owned_table('card_items', $c$
   last_review timestamptz
 $c$);
 
-select tiyaga_owned_table('review_logs', $c$
+select barista_owned_table('review_logs', $c$
   card_item_id uuid not null, rating int not null, reviewed_at timestamptz not null,
   duration_ms int not null default 0, state int not null, due timestamptz not null,
   stability double precision not null, difficulty double precision not null,
@@ -130,19 +130,19 @@ select tiyaga_owned_table('review_logs', $c$
   review timestamptz not null
 $c$);
 
-select tiyaga_owned_table('questions', $c$
+select barista_owned_table('questions', $c$
   subject_id uuid, type text not null default 'essay', source_label text not null default '',
   year int, number text not null default '', text text not null, points numeric not null default 5,
   reference_answer text not null default '', form_type text not null default '', notes text not null default ''
 $c$);
 
-select tiyaga_owned_table('attempts', $c$
+select barista_owned_table('attempts', $c$
   mode text not null, subject_id uuid, started_at timestamptz not null, time_limit_sec int not null,
   submitted_at timestamptz, status text not null default 'in_progress', device_id text not null,
   bar_day_group_id uuid
 $c$);
 
-select tiyaga_owned_table('attempt_items', $c$
+select barista_owned_table('attempt_items', $c$
   attempt_id uuid not null, question_id uuid not null, position int not null,
   answer text not null default '', time_spent_sec int not null default 0,
   flagged boolean not null default false, score numeric, structure jsonb,
@@ -150,38 +150,38 @@ select tiyaga_owned_table('attempt_items', $c$
   ai_notes jsonb
 $c$);
 
-select tiyaga_owned_table('mistakes', $c$
+select barista_owned_table('mistakes', $c$
   subject_id uuid, node_id uuid, source_type text not null default 'manual', source_id uuid,
   what_went_wrong text not null, correct_rule text not null default '', error_type text not null default '',
   status text not null default 'open', card_id uuid
 $c$);
 
-select tiyaga_owned_table('study_sessions', $c$
+select barista_owned_table('study_sessions', $c$
   subject_id uuid, node_id uuid, kind text not null, source text not null,
   started_at timestamptz not null, ended_at timestamptz, duration_sec int not null default 0,
   paused_sec int not null default 0, paused_at timestamptz, note text not null default ''
 $c$);
 
-select tiyaga_owned_table('plans', $c$
+select barista_owned_table('plans', $c$
   start_date date not null, hours_by_weekday jsonb not null, rest_rules jsonb not null default '{}'::jsonb,
   max_subjects_per_day int not null default 2, phases jsonb not null, generated_at timestamptz not null
 $c$);
 
-select tiyaga_owned_table('plan_blocks', $c$
+select barista_owned_table('plan_blocks', $c$
   plan_id uuid not null, date date not null, subject_id uuid not null, minutes int not null,
   kind text not null, status text not null default 'planned', continue_node_id uuid
 $c$);
 
-select tiyaga_owned_table('events', $c$
+select barista_owned_table('events', $c$
   title text not null, starts_at timestamptz not null, ends_at timestamptz not null,
   kind text not null, subject_id uuid
 $c$);
 
-select tiyaga_owned_table('node_links', $c$
+select barista_owned_table('node_links', $c$
   node_id uuid not null, target_type text not null, target_id uuid not null
 $c$);
 
-select tiyaga_owned_table('form_checklists', $c$
+select barista_owned_table('form_checklists', $c$
   form_type text not null, items jsonb not null default '[]'::jsonb
 $c$);
 
@@ -257,7 +257,7 @@ create trigger baon_guard before update on baon_notes for each row execute funct
 
 -- Server-side sync bookkeeping: stamp synced_at, and keep the newer row on
 -- conflicting writes (last write wins on the client's updated_at).
-create or replace function public.tiyaga_sync_stamp() returns trigger
+create or replace function public.barista_sync_stamp() returns trigger
 language plpgsql as $$
 begin
   if tg_op = 'UPDATE' and new.updated_at < old.updated_at then
@@ -276,7 +276,7 @@ begin
     'study_sessions','plans','plan_blocks','events','node_links','form_checklists','baon_notes'
   ] loop
     execute format('drop trigger if exists sync_stamp on %I', t);
-    execute format('create trigger sync_stamp before insert or update on %I for each row execute function tiyaga_sync_stamp()', t);
+    execute format('create trigger sync_stamp before insert or update on %I for each row execute function barista_sync_stamp()', t);
   end loop;
 end $$;
 
@@ -293,4 +293,4 @@ create trigger on_auth_user_created after insert on auth.users for each row exec
 -- Users created before this migration ran.
 insert into profiles (id, user_id, role) select id, id, 'reviewee' from auth.users on conflict (id) do nothing;
 
-drop function if exists public.tiyaga_owned_table(text, text);
+drop function if exists public.barista_owned_table(text, text);

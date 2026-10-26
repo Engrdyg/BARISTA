@@ -224,7 +224,7 @@ function Backup({ settings }: { settings: SettingsData }) {
         <button
           className="btn btn-primary"
           onClick={async () => {
-            download(`tiyaga-backup-${todayManila()}.json`, JSON.stringify(await exportAll()), 'application/json');
+            download(`barista-backup-${todayManila()}.json`, JSON.stringify(await exportAll()), 'application/json');
             await updateSettings({ lastExportAt: new Date().toISOString() });
           }}
         >
@@ -263,7 +263,7 @@ function Backup({ settings }: { settings: SettingsData }) {
               className="btn btn-sm"
               onClick={async () => {
                 const rows = (await db.t(t).toArray()) as unknown as Record<string, unknown>[];
-                download(`tiyaga-${t}-${todayManila()}.csv`, toCsv(rows), 'text/csv');
+                download(`barista-${t}-${todayManila()}.csv`, toCsv(rows), 'text/csv');
               }}
             >
               {t}
@@ -277,7 +277,7 @@ function Backup({ settings }: { settings: SettingsData }) {
           <ul className="mt-2 space-y-1 text-sm">
             {snapshots.map((s) => (
               <li key={s.date}>
-                <button className="underline" onClick={() => download(`tiyaga-snapshot-${s.date}.json`, s.data, 'application/json')}>
+                <button className="underline" onClick={() => download(`barista-snapshot-${s.date}.json`, s.data, 'application/json')}>
                   {s.date}
                 </button>
               </li>
@@ -399,7 +399,7 @@ export default function Settings() {
       </Section>
       <Backup settings={settings} />
       <p className="text-center text-xs text-muted">
-        Tiyaga · subjects {subjects.map((s) => <SubjectTag key={s.id} subject={s} className="mx-0.5" />)}
+        BARISTA · subjects {subjects.map((s) => <SubjectTag key={s.id} subject={s} className="mx-0.5" />)}
       </p>
     </div>
   );
