@@ -1,6 +1,7 @@
 import seed from '../seed/bar2027.json';
 import { db } from './db';
 import { getUserId, stableId } from './identity';
+import { installBank } from './bank';
 import { makeRow, putRows } from './repo';
 import type { ExamConfig, SettingsData, SettingsRow, Subject } from './types';
 
@@ -110,4 +111,5 @@ export async function ensureSeed(): Promise<void> {
       KEEP,
     );
   }
+  void installBank();
 }

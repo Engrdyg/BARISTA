@@ -184,6 +184,8 @@ export interface Question extends BaseRow {
   reference_answer: string;
   form_type: string;
   notes: string;
+  /** Part of the built-in Bar question bank; installed on each device, never uploaded. */
+  builtin?: boolean;
 }
 
 export type AttemptMode = 'drill' | 'mock' | 'bar_day';

@@ -4,6 +4,7 @@ import { FileUp, PenLine, Upload } from 'lucide-react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { NodeSelect } from '../components/TimerDialog';
 import { download, Empty, Field, Markdown, Modal, PageHeader, Section, SubjectChips, SubjectSelect, SubjectTag } from '../components/ui';
+import { dedupeBank } from '../lib/bank';
 import { parseDelimited, toCsv } from '../lib/backup';
 import { db } from '../lib/db';
 import { createAttempt, newGroupId, pickQuestions } from '../lib/exam';
@@ -436,7 +437,7 @@ export default function Practice() {
   const nodeFilter = params.get('node');
 
   const data = useLive(async () => {
-    const questions = (await db.questions.toArray()).filter((x) => !x.deleted_at);
+    const questions = dedupeBank((await db.questions.toArray()).filter((x) => !x.deleted_at));
     const attempts = (await db.attempts.toArray()).filter((a) => !a.deleted_at).sort((a, b) => b.started_at.localeCompare(a.started_at));
     const items = (await db.attempt_items.toArray()).filter((i) => !i.deleted_at);
     const linked = nodeFilter ? new Set((await db.node_links.where('node_id').equals(nodeFilter).toArray()).filter((l) => !l.deleted_at && l.target_type === 'question').map((l) => l.target_id)) : null;

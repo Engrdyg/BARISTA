@@ -50,7 +50,7 @@ async function adoptLocalData(toUid: string): Promise<void> {
       });
       await db.t(t).clear();
       await db.t(t).bulkPut(moved as never[]);
-      await db.outbox.bulkAdd(moved.map((r) => ({ table: t, id: r.id as string, at: now })));
+      await db.outbox.bulkAdd(moved.filter((r) => !r.builtin).map((r) => ({ table: t, id: r.id as string, at: now })));
     }
   });
 }

@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ChevronDown, FileUp, Landmark, Lightbulb, Play, Plus } from 'lucide-react';
 import { Empty, Markdown, PageHeader, PageSkeleton, SubjectChips, SubjectTag } from '../components/ui';
+import { dedupeBank } from '../lib/bank';
 import { db } from '../lib/db';
 import { createAttempt } from '../lib/exam';
 import { useLive, useSettings, useSubjects } from '../lib/hooks';
@@ -29,7 +30,7 @@ export default function BarQuestions() {
   const [importing, setImporting] = useState(false);
 
   const data = useLive(async () => {
-    const qs = (await db.questions.toArray()).filter((q) => !q.deleted_at && isBarQuestion(q));
+    const qs = dedupeBank((await db.questions.toArray()).filter((q) => !q.deleted_at && isBarQuestion(q)));
     const items = (await db.attempt_items.toArray()).filter((i) => !i.deleted_at && i.score !== null);
     const attempts = new Map((await db.attempts.toArray()).map((a) => [a.id, a]));
     const last = new Map<string, { score: number; at: string }>();

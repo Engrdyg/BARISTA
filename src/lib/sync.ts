@@ -141,7 +141,7 @@ async function push(): Promise<void> {
         }
         continue;
       }
-      const clean = rows.filter((r) => r.user_id === uid).map(stripLocal);
+      const clean = rows.filter((r) => r.user_id === uid && !r.builtin).map(stripLocal);
       if (!clean.length) continue;
       await upsertRows(table, clean, parked);
     }
