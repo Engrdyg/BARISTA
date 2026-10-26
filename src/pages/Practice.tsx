@@ -123,12 +123,22 @@ function QuestionEditor({ q: initial, onClose }: { q: Question; onClose: () => v
   );
 }
 
-function BulkPaste({ onClose, subjects }: { onClose: () => void; subjects: Subject[] }) {
+export function BulkPaste({
+  onClose,
+  subjects,
+  preset,
+}: {
+  onClose: () => void;
+  subjects: Subject[];
+  /** Bar mode: the source label follows the year ("2023 Bar"). */
+  preset?: { subjectId?: string | null; bar?: boolean };
+}) {
   const [text, setText] = useState('');
   const [rows, setRows] = useState<SplitProblem[] | null>(null);
-  const [subject, setSubject] = useState<string | null>(null);
-  const [source, setSource] = useState('');
+  const [subject, setSubject] = useState<string | null>(preset?.subjectId ?? null);
+  const [sourceText, setSource] = useState('');
   const [year, setYear] = useState('');
+  const source = preset?.bar && !sourceText ? (year ? `${year} Bar` : '') : sourceText;
   const [type, setType] = useState<QuestionType>('essay');
   const [done, setDone] = useState<number | null>(null);
   return (

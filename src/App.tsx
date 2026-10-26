@@ -17,6 +17,7 @@ const Digests = lazy(() => import('./pages/Digests'));
 const Codals = lazy(() => import('./pages/Codals'));
 const LawView = lazy(() => import('./pages/LawView'));
 const Practice = lazy(() => import('./pages/Practice'));
+const BarQuestions = lazy(() => import('./pages/BarQuestions'));
 const Attempt = lazy(() => import('./pages/Attempt'));
 const Grade = lazy(() => import('./pages/Grade'));
 const Mistakes = lazy(() => import('./pages/Mistakes'));
@@ -49,6 +50,7 @@ const revieweeRouter = () =>
           { path: '/codals', element: wrap(<Codals />) },
           { path: '/codals/:law', element: wrap(<LawView />) },
           { path: '/practice', element: wrap(<Practice />) },
+          { path: '/bar-questions', element: wrap(<BarQuestions />) },
           { path: '/practice/attempt/:id', element: wrap(<Attempt />) },
           { path: '/practice/grade/:id', element: wrap(<Grade />) },
           { path: '/mistakes', element: wrap(<Mistakes />) },
